@@ -38,6 +38,6 @@ public class ConfigManager
 
     public void WriteConfig(Config config)
     {
-        File.WriteAllText(Path, JsonSerializer.Serialize(config));
+        File.WriteAllText(Path, JsonSerializer.Serialize(config, _options));
     }
 }

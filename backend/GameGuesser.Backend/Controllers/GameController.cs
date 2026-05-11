@@ -1,8 +1,10 @@
 ﻿using GameGuesser.Backend.Models;
 using GameGuesser.Backend.Models.Api;
+using GameGuesser.Backend.Models.Responses;
 using GameGuesser.Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -16,16 +18,18 @@ public class GameController : ControllerBase
     private readonly ILogger<GameController> _logger;
     private readonly ConfigManager _configManager;
     private readonly HttpClient _client;
+    private readonly JsonSerializerOptions _jsonOpt;
 
-    public GameController(ILogger<GameController> logger, ConfigManager configManager, HttpClient client)
+    public GameController(ILogger<GameController> logger, ConfigManager configManager, HttpClient client, JsonSerializerOptions jsonOpt)
     {
         _logger = logger;
         _configManager = configManager;
         _client = client;
+        _jsonOpt = jsonOpt;
     }
 
     [HttpGet("info")]
-    [ProducesResponseType<int>(200)]
+    [ProducesResponseType<GameInfo>(200)]
     public async Task<IActionResult> GetInfo()
     {
         var config = _configManager.GetConfig();
@@ -41,7 +45,10 @@ public class GameController : ControllerBase
                 if (config.LastUpdate != now)
                 {
                     // Get game data
-                    var resp = JsonSerializer.Deserialize<SteamGameInfo>(_client.GetStringAsync("https://store.steampowered.com/api/appdetails?appids=440&l=english").GetAwaiter().GetResult())!.First()!;
+                    var resp = JsonSerializer.Deserialize<SteamGameInfo>(_client.GetStringAsync("https://store.steampowered.com/api/appdetails?appids=440&l=english").GetAwaiter().GetResult(), new JsonSerializerOptions()
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+                    })!.First()!;
 
                     var desc = Regex.Replace(WebUtility.HtmlDecode(Regex.Unescape(resp.Value.Data.DetailedDescription)).Replace("\t", ""), "<[^>]+>", "");
 
@@ -63,6 +70,7 @@ public class GameController : ControllerBase
                                     NeedToBeGuessed = true,
                                     Word = currWord.ToString()
                                 });
+                                currWord = new();
                             }
                             tokens.Add(new()
                             {
@@ -95,6 +103,13 @@ public class GameController : ControllerBase
             }
         }
 
-        return StatusCode(StatusCodes.Status200OK, 1);
+        return StatusCode(StatusCodes.Status200OK, new GameInfo()
+        {
+            Tokens = config.Game.Description.Select(x => new GameToken()
+            {
+                DisplayedWord = x.NeedToBeGuessed ? null : x.Word,
+                Length = x.Word.Length
+            }).ToArray()
+        });
     }
 }

@@ -2,12 +2,12 @@
 {
     public class GameInfo
     {
-        public required GameToken[] Tokens;
+        public required GameToken[] Tokens { set; get; }
     }
 
     public class GameToken
     {
-        public required string Length { set; get; }
+        public required int Length { set; get; }
         public required string? DisplayedWord { set; get; }
     }
 }
