@@ -1,0 +1,58 @@
+/* Variable declaration */
+:root {
+    --primary-light: #ccc;
+    --primary-background: #100f25;
+
+    --border: 1px solid var(--primary-light);
+    --border-radius: 10px;
+
+    --bg-size: 20px;
+    --bg-primary: #080814;
+    --bg-line: #0f0f0f;
+}
+
+html, input, textarea {
+    font-family: "Urbanist", sans-serif;
+}
+
+html {
+    color: var(--primary-light);
+}
+
+body {
+    margin-top: 30px;
+
+    /* https://stackoverflow.com/a/50277867 */
+    background:
+        radial-gradient(circle farthest-side at 0% 50%, var(--bg-primary) 23.5%, transparent 0) calc(var(--bg-size) * .7) var(--bg-size),
+        radial-gradient(circle farthest-side at 0% 50%, var(--bg-line) 24%, transparent 0) calc(var(--bg-size) * .6129) var(--bg-size),
+        linear-gradient(var(--bg-primary) 14%, transparent 0, transparent 85%, var(--bg-primary) 0)0 0,
+        linear-gradient(150deg, var(--bg-primary) 24%, var(--bg-line) 0, var(--bg-line) 26%, transparent 0, transparent 74%, var(--bg-line) 0, var(--bg-line) 76%, var(--bg-primary) 0)0 0,
+        linear-gradient(30deg, var(--bg-primary) 24%, var(--bg-line) 0, var(--bg-line) 26%, transparent 0, transparent 74%, var(--bg-line) 0, var(--bg-line) 76%, var(--bg-primary) 0)0 0,
+        linear-gradient(90deg, var(--bg-line) 2%, var(--bg-primary) 0, var(--bg-primary) 98%, var(--bg-line) 0%)0 0 var(--bg-primary);
+        background-size:calc(var(--bg-size) * 1.333) calc(var(--bg-size) * 2);
+}
+
+/* Container components */
+.container {
+    background-color: var(--primary-background);
+
+    display: block;
+    width: 1000px;
+    margin: 0 auto;
+
+    padding: 5px;
+    margin-bottom: 15px;
+
+    overflow: hidden;
+}
+.box {
+    position: relative;
+    border: var(--border);
+    border-radius: var(--border-radius);
+}
+@media (max-width: 1000px) {
+    .container {
+        width: 98%;
+    }
+}
