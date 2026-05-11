@@ -28,6 +28,33 @@ public class GameController : ControllerBase
         _jsonOpt = jsonOpt;
     }
 
+
+    [HttpGet("validate/{word}")]
+    [ProducesResponseType<WordInfo>(400)]
+    public async Task<IActionResult> ValidateWord(string word)
+    {
+        if (string.IsNullOrWhiteSpace(word))
+        {
+            return StatusCode(StatusCodes.Status400BadRequest);
+        }
+
+        word = word.Trim();
+
+        var config = _configManager.GetConfig();
+        List<int> indexes = new();
+        for (int i = 0; i < config.Game.Description.Length; i++)
+        {
+            if (string.Compare(config.Game.Description[i].Word, word, true) == 0)
+            {
+                indexes.Add(i);
+            }
+        }
+        return StatusCode(StatusCodes.Status200OK, new WordInfo()
+        {
+            FoundIndexed = indexes.ToArray()
+        });
+    }
+
     [HttpGet("info")]
     [ProducesResponseType<GameInfo>(200)]
     public async Task<IActionResult> GetInfo()
