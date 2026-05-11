@@ -1,7 +1,7 @@
 /* Variable declaration */
 :root {
     --primary-light: #ccc;
-    --primary-background: #100f25;
+    --primary-background: #1b1935;
 
     --border: 1px solid var(--primary-light);
     --border-radius: 10px;
@@ -55,4 +55,24 @@ body {
     .container {
         width: 98%;
     }
+}
+
+.is-flex {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+.flex-center-hor {
+    justify-content: center;
+}
+.flex-center-ver {
+    align-items: center;
+}
+
+.hidden-word {
+    background-color: black;
+}
+
+#word-list {
+    font-size: 1.5em;
 }
