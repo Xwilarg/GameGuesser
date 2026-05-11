@@ -1,3 +1,4 @@
+using GameGuesser.Backend.Services;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,8 @@ builder.Services.AddSingleton(new JsonSerializerOptions()
 {
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 });
+builder.Services.AddSingleton<ConfigManager>();
+builder.Services.AddHttpClient();
 
 builder.Services.AddCors(options =>
 {
@@ -15,6 +18,7 @@ builder.Services.AddCors(options =>
         p.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod();
     });
 });
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -28,8 +32,6 @@ else
 {
     app.UseHttpsRedirection();
 }
-
-app.UseAuthorization();
 
 app.MapControllers();
 

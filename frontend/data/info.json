@@ -1,6 +1,8 @@
 {
     "last_update": null,
-    "name": "",
-    "description": "",
-    "iteration": 0
+    "iteration": 0,
+    "game": {
+        "name": "",
+        "description": ""
+    }
 }
