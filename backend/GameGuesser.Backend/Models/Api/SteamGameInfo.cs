@@ -4,12 +4,12 @@ public class SteamGameInfo : Dictionary<string, SteamGameEntryInfo> { }
 
 public class SteamGameEntryInfo
 {
-    public SteamGameDataInfo Data { set; get; }
+    public required SteamGameDataInfo Data { set; get; }
 }
 
 public class SteamGameDataInfo
 {
-    public string Type { set; get; }
-    public string Name { set; get; }
-    public string DetailedDescription { set; get; }
+    public required string Type { set; get; }
+    public required string Name { set; get; }
+    public required string DetailedDescription { set; get; }
 }

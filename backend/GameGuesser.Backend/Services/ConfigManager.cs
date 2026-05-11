@@ -15,6 +15,7 @@ public class ConfigManager
     }
 
     private JsonSerializerOptions _options;
+    public object Lock { get; } = new();
 
     private string Path
         => Debugger.IsAttached || Environment.GetEnvironmentVariable("TEST") == "1" ? "info.json" : "/data/info.json";
@@ -33,5 +34,10 @@ public class ConfigManager
                 Iteration = 0,
                 LastUpdate = null
             };
+    }
+
+    public void WriteConfig(Config config)
+    {
+        File.WriteAllText(Path, JsonSerializer.Serialize(config));
     }
 }

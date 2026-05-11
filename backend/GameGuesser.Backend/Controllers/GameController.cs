@@ -33,27 +33,66 @@ public class GameController : ControllerBase
 
         if (config.LastUpdate != now)
         {
-            var resp = JsonSerializer.Deserialize<SteamGameInfo>(await _client.GetStringAsync("https://store.steampowered.com/api/appdetails?appids=440&l=english"))!.First()!;
-
-            var desc = Regex.Replace(WebUtility.HtmlDecode(Regex.Unescape(resp.Value.Data.DetailedDescription)).Replace("\t", ""), "<[^>]+>", "");
-
-            List<Token> tokens = [];
-            StringBuilder currWord = new();
-            foreach (var l in desc)
+            lock(_configManager.Lock) // Prevent 2 users to reload daily word at the same time
             {
+                config = _configManager.GetConfig();
+                now = DateTime.UtcNow.ToString("yyyyMMdd");
 
-            }
-
-            config = new()
-            {
-                Game = new()
+                if (config.LastUpdate != now)
                 {
-                    Name = resp.Value.Data.Name,
-                    Description = tokens.ToArray(),
-                },
-                Iteration = config.Iteration + 1,
-                LastUpdate = now
-            };
+                    // Get game data
+                    var resp = JsonSerializer.Deserialize<SteamGameInfo>(_client.GetStringAsync("https://store.steampowered.com/api/appdetails?appids=440&l=english").GetAwaiter().GetResult())!.First()!;
+
+                    var desc = Regex.Replace(WebUtility.HtmlDecode(Regex.Unescape(resp.Value.Data.DetailedDescription)).Replace("\t", ""), "<[^>]+>", "");
+
+                    // Parse description into tokens
+                    List<Token> tokens = [];
+                    StringBuilder currWord = new();
+                    foreach (var l in desc)
+                    {
+                        if (char.IsLetterOrDigit(l))
+                        {
+                            currWord.Append(l);
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(currWord.ToString()))
+                            {
+                                tokens.Add(new()
+                                {
+                                    NeedToBeGuessed = true,
+                                    Word = currWord.ToString()
+                                });
+                            }
+                            tokens.Add(new()
+                            {
+                                NeedToBeGuessed = false,
+                                Word = l.ToString()
+                            });
+                        }
+                    }
+                    if (!string.IsNullOrEmpty(currWord.ToString()))
+                    {
+                        tokens.Add(new()
+                        {
+                            NeedToBeGuessed = true,
+                            Word = currWord.ToString()
+                        });
+                    }
+
+                    config = new()
+                    {
+                        Game = new()
+                        {
+                            Name = resp.Value.Data.Name,
+                            Description = tokens.ToArray(),
+                        },
+                        Iteration = config.Iteration + 1,
+                        LastUpdate = now
+                    };
+                    _configManager.WriteConfig(config);
+                }
+            }
         }
 
         return StatusCode(StatusCodes.Status200OK, 1);
