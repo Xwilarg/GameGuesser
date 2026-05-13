@@ -9,6 +9,7 @@ builder.Services.AddSingleton(new JsonSerializerOptions()
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 });
 builder.Services.AddSingleton<ConfigManager>();
+builder.Services.AddSingleton<Random>();
 builder.Services.AddHttpClient();
 
 builder.Services.AddCors(options =>
