@@ -2,6 +2,7 @@
 {
     public class WordInfo
     {
-        public required int[] FoundIndexed { set; get; }
+        public required int[] FoundIndexes { set; get; }
+        public required int[] CloseIndexes { set; get; }
     }
 }

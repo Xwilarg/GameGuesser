@@ -8,24 +8,45 @@ interface GameData
 interface GameWordData
 {
     displayedWord: string
+    displayAsClose: boolean // Word was not found but we are close
     length: number
 }
 
 interface WordData
 {
-    foundIndexed: number[]
+    foundIndexes: number[]
+    closeIndexes: number[]
 }
 
 export default function MainForm() {
     let [data, setData] = useState<GameData | null>(null);
     let [input, setInput] = useState("");
     let [canType, setCanType] = useState(true);
+    let [isLoadingData, setIsLoadingData] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        fetch("/api/info")
-        .then(x => x.json())
-        .then(x => setData(x));
+        let timeoutID: number | null = null;
+
+        function getApiInfo() {
+            fetch("/api/info")
+            .then(x => {
+                if (x.status === 204) {
+                    setIsLoadingData(true);
+                    timeoutID = setTimeout(getApiInfo, 1_000);
+                    return;
+                }
+                return x.json().then(x => {
+                    setIsLoadingData(true);
+                    setData(x);
+                });
+            });
+        }
+        getApiInfo();
+
+        return () => {
+            if (timeoutID !== null) clearTimeout(timeoutID);
+        }
     }, []);
 
     useEffect(() => {
@@ -33,6 +54,14 @@ export default function MainForm() {
     }, [ canType ])
 
     if (!data) {
+        if (isLoadingData) {
+            return (
+                <div className="container box">
+                    Data are being initialized, please wait...
+                </div>
+            )
+        }
+
         return (
             <div className="container box">
                 Loading...
@@ -55,8 +84,13 @@ export default function MainForm() {
                         .then((x: WordData) => {
                             setData(d => {
                                 let tokens = [...d!.tokens];
-                                for (let i of x.foundIndexed) {
+                                for (let i of x.closeIndexes) {
                                     tokens[i].displayedWord = input;
+                                    tokens[i].displayAsClose = true;
+                                }
+                                for (let i of x.foundIndexes) {
+                                    tokens[i].displayedWord = input;
+                                    tokens[i].displayAsClose = false;
                                 }
                                 return { tokens: tokens };
                             })
@@ -76,7 +110,7 @@ export default function MainForm() {
                                 width: (x.length * 14.4025) + "px"
                             }}></span>
                         }
-                        return <span>{x.displayedWord}</span>
+                        return <span className={x.displayAsClose ? "close-word" : ""}>{x.displayedWord}</span>
                     })
                 }
             </div>
