@@ -8,14 +8,20 @@ interface GameData
 interface GameWordData
 {
     displayedWord: string
-    displayAsClose: boolean // Word was not found but we are close
+    displayAsClose: number | null // Word was not found but we are close
     length: number
 }
 
 interface WordData
 {
     foundIndexes: number[]
-    closeIndexes: number[]
+    closeIndexes: WordIndexScoreInfo[]
+}
+
+interface WordIndexScoreInfo
+{
+    index: number
+    score: number
 }
 
 export default function MainForm() {
@@ -36,7 +42,7 @@ export default function MainForm() {
                     timeoutID = setTimeout(getApiInfo, 1_000);
                     return;
                 }
-                return x.json().then(x => {
+                return x.json().then((x: GameData) => {
                     setIsLoadingData(true);
                     setData(x);
                 });
@@ -84,15 +90,15 @@ export default function MainForm() {
                         .then((x: WordData) => {
                             setData(d => {
                                 let tokens = [...d!.tokens];
-                                for (let i of x.closeIndexes) {
-                                    if (tokens[i].displayedWord === null || tokens[i].displayAsClose) { // Don't replace words we already found
-                                        tokens[i].displayedWord = input;
-                                        tokens[i].displayAsClose = true;
+                                for (let ci of x.closeIndexes) {
+                                    if (tokens[ci.index].displayedWord === null || ci.score > tokens[ci.index].displayAsClose!) { // Don't replace words we already found
+                                        tokens[ci.index].displayedWord = input;
+                                        tokens[ci.index].displayAsClose = ci.score;
                                     }
                                 }
                                 for (let i of x.foundIndexes) {
                                     tokens[i].displayedWord = input;
-                                    tokens[i].displayAsClose = false;
+                                    tokens[i].displayAsClose = null;
                                 }
                                 return { tokens: tokens };
                             })
@@ -112,7 +118,12 @@ export default function MainForm() {
                                 width: (x.length * 14.4025) + "px"
                             }}></span>
                         }
-                        return <span className={x.displayAsClose ? "close-word" : ""}>{x.displayedWord}</span>
+                        if (x.displayAsClose !== null) {
+                            return <span style={{
+                                color: `rgba(255, 166, 0, ${x.displayAsClose})`
+                            }}>{x.displayedWord}</span>
+                        }
+                        return <span>{x.displayedWord}</span>
                     })
                 }
             </div>

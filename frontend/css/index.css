@@ -72,9 +72,6 @@ body {
 .hidden-word {
     background-color: black;
 }
-.close-word {
-    color: rgba(255, 166, 0, 0.603);
-}
 
 #word-list {
     font-size: 1.5em;

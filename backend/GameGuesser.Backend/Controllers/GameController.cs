@@ -36,7 +36,7 @@ public class GameController : ControllerBase
 
         var config = _configManager.GetConfig();
         List<int> foundIndexes = new();
-        List<int> closeIndexes = new();
+        List<WordIndexScoreInfo> closeIndexes = new();
         for (int i = 0; i < config.Game.Description.Length; i++)
         {
             if (string.Compare(config.Game.Description[i].Word, word, true) == 0)
@@ -45,7 +45,11 @@ public class GameController : ControllerBase
             }
             if (config.Game.Description[i].SimilarWords.Any(x => string.Compare(x, word, true) == 0))
             {
-                closeIndexes.Add(i);
+                closeIndexes.Add(new()
+                {
+                    Index = i,
+                    Score = 1f - Array.FindIndex(config.Game.Description[i].SimilarWords, x => string.Compare(x, word, true) == 0) / (float)(config.Game.Description[i].SimilarWords.Length - 1)
+                });
             }
         }
         return StatusCode(StatusCodes.Status200OK, new WordInfo()
