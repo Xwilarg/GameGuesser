@@ -91,13 +91,14 @@ export default function MainForm() {
                             setData(d => {
                                 let tokens = [...d!.tokens];
                                 for (let ci of x.closeIndexes) {
-                                    if (tokens[ci.index].displayedWord === null || ci.score > tokens[ci.index].displayAsClose!) { // Don't replace words we already found
+                                    if (tokens[ci.index].displayedWord === null || (tokens[ci.index].displayAsClose !== null && ci.score > tokens[ci.index].displayAsClose!)) { // Don't replace words we already found
                                         tokens[ci.index].displayedWord = input;
                                         tokens[ci.index].displayAsClose = ci.score;
                                     }
                                 }
                                 for (let i of x.foundIndexes) {
                                     tokens[i].displayedWord = input;
+                                    tokens[i].displayAsClose = null;
                                     tokens[i].displayAsClose = null;
                                 }
                                 return { tokens: tokens };
