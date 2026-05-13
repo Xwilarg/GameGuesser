@@ -85,8 +85,10 @@ export default function MainForm() {
                             setData(d => {
                                 let tokens = [...d!.tokens];
                                 for (let i of x.closeIndexes) {
-                                    tokens[i].displayedWord = input;
-                                    tokens[i].displayAsClose = true;
+                                    if (tokens[i].displayedWord === null || tokens[i].displayAsClose) { // Don't replace words we already found
+                                        tokens[i].displayedWord = input;
+                                        tokens[i].displayAsClose = true;
+                                    }
                                 }
                                 for (let i of x.foundIndexes) {
                                     tokens[i].displayedWord = input;

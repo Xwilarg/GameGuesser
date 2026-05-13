@@ -73,7 +73,7 @@ body {
     background-color: black;
 }
 .close-word {
-    color: orange;
+    color: rgba(255, 166, 0, 0.603);
 }
 
 #word-list {
