@@ -77,3 +77,11 @@ body {
     font-size: 1.5em;
     font-family: "Google Sans Code", monospace;
 }
+
+input[type=text] {
+    background-color: transparent;
+    border: var(--border);
+    border-radius: var(--border-radius);
+    padding: 5px;
+    color: var(--primary-light);
+}
