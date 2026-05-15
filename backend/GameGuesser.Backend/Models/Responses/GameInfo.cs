@@ -2,7 +2,9 @@
 {
     public class GameInfo
     {
-        public required GameToken[] Tokens { set; get; }
+        public required int Iteration { set; get; }
+        public required GameToken[] Name { set; get; }
+        public required GameToken[] Description { set; get; }
     }
 
     public class GameToken

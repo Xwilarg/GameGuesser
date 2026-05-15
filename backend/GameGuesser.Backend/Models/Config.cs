@@ -9,7 +9,7 @@
 
     public class GameConfig
     {
-        public required string Name { set; get; }
+        public required Token[] Name { set; get; }
         public required Token[] Description { set; get; }
     }
 

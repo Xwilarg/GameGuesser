@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react"
+import GuessAreaForm from "./GuessAreaForm"
 
 interface GameData
 {
-    tokens: GameWordData[]
+    name: GameWordData[]
+    description: GameWordData[]
 }
 
-interface GameWordData
+export interface GameWordData
 {
     displayedWord: string
     displayAsClose: number | null // Word was not found but we are close
@@ -13,6 +15,12 @@ interface GameWordData
 }
 
 interface WordData
+{
+    name: WordBlockData
+    description: WordBlockData
+}
+
+interface WordBlockData
 {
     foundIndexes: number[]
     closeIndexes: WordIndexScoreInfo[]
@@ -59,6 +67,20 @@ export default function MainForm() {
         if (canType) inputRef?.current?.focus();
     }, [ canType ])
 
+    function updateTokenList(tokens: GameWordData[], x: WordBlockData) {
+        for (let ci of x.closeIndexes) {
+            if (tokens[ci.index].displayedWord === null || (tokens[ci.index].displayAsClose !== null && ci.score > tokens[ci.index].displayAsClose!)) { // Don't replace words we already found
+                tokens[ci.index].displayedWord = input;
+                tokens[ci.index].displayAsClose = ci.score;
+            }
+        }
+        for (let i of x.foundIndexes) {
+            tokens[i].displayedWord = input;
+            tokens[i].displayAsClose = null;
+            tokens[i].displayAsClose = null;
+        }
+    }
+
     if (!data) {
         if (isLoadingData) {
             return (
@@ -89,19 +111,14 @@ export default function MainForm() {
                         })
                         .then((x: WordData) => {
                             setData(d => {
-                                let tokens = [...d!.tokens];
-                                for (let ci of x.closeIndexes) {
-                                    if (tokens[ci.index].displayedWord === null || (tokens[ci.index].displayAsClose !== null && ci.score > tokens[ci.index].displayAsClose!)) { // Don't replace words we already found
-                                        tokens[ci.index].displayedWord = input;
-                                        tokens[ci.index].displayAsClose = ci.score;
-                                    }
-                                }
-                                for (let i of x.foundIndexes) {
-                                    tokens[i].displayedWord = input;
-                                    tokens[i].displayAsClose = null;
-                                    tokens[i].displayAsClose = null;
-                                }
-                                return { tokens: tokens };
+                                let nameTokens = [...d!.name];
+                                let descriptionTokens = [...d!.description];
+                                updateTokenList(nameTokens, x.name);
+                                updateTokenList(descriptionTokens, x.description);
+                                return { 
+                                    name: nameTokens,
+                                    description: descriptionTokens
+                                };
                             })
                             setInput("");
                             setCanType(true);
@@ -110,24 +127,8 @@ export default function MainForm() {
                     }
                 }} />
             </div>
-            <div className="container box is-flex" id="word-list">
-                {
-                    data.tokens.map(x => {
-                        if (x.displayedWord === null)
-                        {
-                            return <span className="hidden-word" style={{
-                                width: (x.length * 14.4025) + "px"
-                            }}></span>
-                        }
-                        if (x.displayAsClose !== null) {
-                            return <span style={{
-                                color: `rgba(255, 166, 0, ${x.displayAsClose})`
-                            }}>{x.displayedWord}</span>
-                        }
-                        return <span>{x.displayedWord}</span>
-                    })
-                }
-            </div>
+            <GuessAreaForm data={data.name} />
+            <GuessAreaForm data={data.description} />
         </>
     )
 }

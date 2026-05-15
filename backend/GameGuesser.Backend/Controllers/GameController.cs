@@ -1,4 +1,5 @@
-﻿using GameGuesser.Backend.Models.Responses;
+﻿using GameGuesser.Backend.Models;
+using GameGuesser.Backend.Models.Responses;
 using GameGuesser.Backend.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -22,6 +23,31 @@ public class GameController : ControllerBase
         _jsonOpt = jsonOpt;
     }
 
+    private WordBlockInfo GetFoundWords(Token[] tokens, string word)
+    {
+        List<int> foundIndexes = new();
+        List<WordIndexScoreInfo> closeIndexes = new();
+        for (int i = 0; i < tokens.Length; i++)
+        {
+            if (string.Compare(tokens[i].Word, word, true) == 0)
+            {
+                foundIndexes.Add(i);
+            }
+            if (tokens[i].SimilarWords.Any(x => string.Compare(x, word, true) == 0))
+            {
+                closeIndexes.Add(new()
+                {
+                    Index = i,
+                    Score = 1f - Array.FindIndex(tokens[i].SimilarWords, x => string.Compare(x, word, true) == 0) / (float)(tokens[i].SimilarWords.Length - 1)
+                });
+            }
+        }
+        return new()
+        {
+            FoundIndexes = foundIndexes.ToArray(),
+            CloseIndexes = closeIndexes.ToArray()
+        };
+    }
 
     [HttpGet("validate/{word}")]
     [ProducesResponseType<WordInfo>(400)]
@@ -35,27 +61,11 @@ public class GameController : ControllerBase
         word = word.Trim();
 
         var config = _configManager.GetConfig();
-        List<int> foundIndexes = new();
-        List<WordIndexScoreInfo> closeIndexes = new();
-        for (int i = 0; i < config.Game.Description.Length; i++)
-        {
-            if (string.Compare(config.Game.Description[i].Word, word, true) == 0)
-            {
-                foundIndexes.Add(i);
-            }
-            if (config.Game.Description[i].SimilarWords.Any(x => string.Compare(x, word, true) == 0))
-            {
-                closeIndexes.Add(new()
-                {
-                    Index = i,
-                    Score = 1f - Array.FindIndex(config.Game.Description[i].SimilarWords, x => string.Compare(x, word, true) == 0) / (float)(config.Game.Description[i].SimilarWords.Length - 1)
-                });
-            }
-        }
+        
         return StatusCode(StatusCodes.Status200OK, new WordInfo()
         {
-            FoundIndexes = foundIndexes.ToArray(),
-            CloseIndexes = closeIndexes.ToArray()
+            Name = GetFoundWords(config.Game.Name, word),
+            Description = GetFoundWords(config.Game.Description, word)
         });
     }
 
@@ -77,7 +87,13 @@ public class GameController : ControllerBase
 
         return StatusCode(StatusCodes.Status200OK, new GameInfo()
         {
-            Tokens = config.Game.Description.Select(x => new GameToken()
+            Iteration = config.Iteration,
+            Name = config.Game.Name.Select(x => new GameToken()
+            {
+                DisplayedWord = x.NeedToBeGuessed ? null : x.Word,
+                Length = x.Word.Length
+            }).ToArray(),
+            Description = config.Game.Description.Select(x => new GameToken()
             {
                 DisplayedWord = x.NeedToBeGuessed ? null : x.Word,
                 Length = x.Word.Length

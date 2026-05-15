@@ -43,7 +43,7 @@ public class ConfigManager
                 Game = new()
                 {
                     Description = [],
-                    Name = "",
+                    Name = [],
                 },
                 Iteration = 0,
                 LastUpdate = null
@@ -53,6 +53,60 @@ public class ConfigManager
     public void WriteConfig(Config config)
     {
         File.WriteAllText(Path, JsonSerializer.Serialize(config, _options));
+    }
+
+    private Token[] StringToTokens(string text)
+    {
+        List<Token> tokens = [];
+        StringBuilder currWord = new();
+        foreach (var l in text)
+        {
+            if (char.IsLetterOrDigit(l))
+            {
+                currWord.Append(l); // Making a word
+            }
+            else // We found some punctuation or a blank space
+            {
+                if (!string.IsNullOrEmpty(currWord.ToString())) // We stored letters before so we have a pending word
+                {
+                    tokens.Add(new()
+                    {
+                        NeedToBeGuessed = true,
+                        Word = currWord.ToString()
+                    });
+                    currWord = new();
+                }
+                tokens.Add(new()
+                {
+                    NeedToBeGuessed = false,
+                    Word = l.ToString()
+                });
+            }
+        }
+        if (!string.IsNullOrEmpty(currWord.ToString())) // String ends with a pending word
+        {
+            tokens.Add(new()
+            {
+                NeedToBeGuessed = true,
+                Word = currWord.ToString()
+            });
+        }
+
+        // For each word we use an API to detect which words are close in meaning
+        Dictionary<string, string[]> adjacents = [];
+        foreach (var token in tokens)
+        {
+            if (token.NeedToBeGuessed)
+            {
+                if (!adjacents.ContainsKey(token.Word.ToLowerInvariant()))
+                {
+                    adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<SimilarInfo[]>(_client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}").GetAwaiter().GetResult(), _jsonOpt)!.Select(x => x.Word).ToArray());
+                }
+
+                token.SimilarWords = adjacents[token.Word.ToLowerInvariant()];
+            }
+        }
+        return tokens.ToArray();
     }
 
     public void Update()
@@ -73,61 +127,15 @@ public class ConfigManager
                 var desc = Regex.Replace(WebUtility.HtmlDecode(Regex.Unescape(resp.Value.Data.DetailedDescription)).Replace("\t", ""), "<[^>]+>", "");
 
                 // Parse description into tokens
-                List<Token> tokens = [];
-                StringBuilder currWord = new();
-                foreach (var l in desc)
-                {
-                    if (char.IsLetterOrDigit(l))
-                    {
-                        currWord.Append(l);
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(currWord.ToString()))
-                        {
-                            tokens.Add(new()
-                            {
-                                NeedToBeGuessed = true,
-                                Word = currWord.ToString()
-                            });
-                            currWord = new();
-                        }
-                        tokens.Add(new()
-                        {
-                            NeedToBeGuessed = false,
-                            Word = l.ToString()
-                        });
-                    }
-                }
-                if (!string.IsNullOrEmpty(currWord.ToString()))
-                {
-                    tokens.Add(new()
-                    {
-                        NeedToBeGuessed = true,
-                        Word = currWord.ToString()
-                    });
-                }
-
-                Dictionary<string, string[]> adjacents = [];
-                foreach (var token in tokens)
-                {
-                    if (token.NeedToBeGuessed)
-                    {
-                        if (!adjacents.ContainsKey(token.Word.ToLowerInvariant()))
-                        {
-                            adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<SimilarInfo[]>(_client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}").GetAwaiter().GetResult(), _jsonOpt)!.Select(x => x.Word).ToArray());
-                        }
-
-                        token.SimilarWords = adjacents[token.Word.ToLowerInvariant()];
-                    }
-                }
+                var tokensDesc = StringToTokens(desc);
+                var tokensName = StringToTokens(resp.Value.Data.Name);
 
                 config = new()
                 {
                     Game = new()
                     {
-                        Name = resp.Value.Data.Name,
-                        Description = tokens.ToArray(),
+                        Name = tokensName,
+                        Description = tokensDesc,
                     },
                     Iteration = config.Iteration + 1,
                     LastUpdate = now
