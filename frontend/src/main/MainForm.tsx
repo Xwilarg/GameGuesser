@@ -10,6 +10,7 @@ interface GameData
 
 export interface GameWordData
 {
+    wasJustFound: boolean
     displayedWord: string
     displayAsClose: number | null // Word was not found but we are close
     length: number
@@ -69,6 +70,9 @@ export default function MainForm() {
     }, [ canType ])
 
     function updateTokenList(tokens: GameWordData[], x: WordBlockData) {
+        for (let token of tokens) {
+            token.wasJustFound = false;
+        }
         for (let ci of x.closeIndexes) {
             if (tokens[ci.index].displayedWord === null || (tokens[ci.index].displayAsClose !== null && ci.score > tokens[ci.index].displayAsClose!)) { // Don't replace words we already found
                 tokens[ci.index].displayedWord = input;
@@ -76,8 +80,8 @@ export default function MainForm() {
             }
         }
         for (let i of x.foundIndexes) {
+            tokens[i].wasJustFound = true;
             tokens[i].displayedWord = input;
-            tokens[i].displayAsClose = null;
             tokens[i].displayAsClose = null;
         }
     }

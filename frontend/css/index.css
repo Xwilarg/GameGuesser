@@ -89,6 +89,9 @@ button, .button {
 .hidden-word {
     background-color: black;
 }
+.found-word {
+    color: rgb(151, 228, 151);
+}
 
 #word-list {
     font-size: 1.5em;
