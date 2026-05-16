@@ -48,7 +48,7 @@ export function getGameName(): string {
 
 function didWin(data: GameWordData[]): boolean
 {
-    return data.every(x => x.displayedWord !== null);
+    return data.every(x => x.displayedWord !== null && x.displayAsClose === null);
 }
 
 export default function MainForm() {
