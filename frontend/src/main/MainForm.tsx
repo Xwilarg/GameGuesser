@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import GuessAreaForm from "./GuessAreaForm"
 import { Link } from "react-router"
+import WinningForm from "./WinningForm"
 
-interface GameData
+export interface GameData
 {
     iteration: number
     name: GameWordData[]
@@ -12,7 +13,7 @@ interface GameData
 export interface GameWordData
 {
     wasJustFound: boolean
-    displayedWord: string
+    displayedWord: string | null
     displayAsClose: number | null // Word was not found but we are close
     length: number
 }
@@ -35,45 +36,68 @@ interface WordIndexScoreInfo
     score: number
 }
 
+function getEndpoint(): string
+{
+    if (window.location.host.startsWith("localhost")) return "http://localhost:5174";
+    return "";
+}
+
+export function getGameName(): string {
+    return "Game Guesser";
+}
+
+function didWin(data: GameWordData[]): boolean
+{
+    return data.every(x => x.displayedWord !== null);
+}
+
 export default function MainForm() {
     let [data, setData] = useState<GameData | null>(null);
+    let [msg, setMsg] = useState<string | null>("Loading...");
     let [input, setInput] = useState("");
     let [canType, setCanType] = useState(true);
-    let [isLoadingData, setIsLoadingData] = useState(false);
+    let [showVictory, setShowVictory] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         let timeoutID: number | null = null;
 
         function getApiInfo() {
-            fetch("/api/info")
+            fetch(`${getEndpoint()}/api/info`)
             .then(x => {
                 if (x.status === 204) {
-                    setIsLoadingData(true);
+                    setMsg("Data are being initialized, please wait...")
                     timeoutID = setTimeout(getApiInfo, 1_000);
                     return;
                 }
                 return x.json().then((x: GameData) => {
-                    setIsLoadingData(true);
-
                     if (parseInt(localStorage.getItem("iteration") ?? "0") === x.iteration) {
                         try
                         {
-                            setData(JSON.parse(localStorage.getItem("state")!));
+                            const state: GameData = JSON.parse(localStorage.getItem("state")!);
+                            setData(state);
+                            if (didWin(state.name))
+                            {
+                                setShowVictory(true);
+                            }
                         }
                         catch
                         {
                             console.warn("Failed to deserialize game state from local storation, resetting data");
                             localStorage.setItem("iteration", x.iteration.toString());
-                            localStorage.setItem("state", "{}");
+                            localStorage.setItem("state", JSON.stringify(x));
                             setData(x);
                         }
                     } else {
                         localStorage.setItem("iteration", x.iteration.toString());
-                        localStorage.setItem("state", "{}");
+                        localStorage.setItem("state", JSON.stringify(x));
                         
                         setData(x);
                     }
+
+                    setMsg(null)
+                }).catch(err => {
+                    setMsg(`An error occured while initializing game data: ${err}`)
                 });
             });
         }
@@ -105,24 +129,11 @@ export default function MainForm() {
         }
     }
 
-    if (!data) {
-        if (isLoadingData) {
-            return (
-                <>
-                    <div className="container box">
-                        Data are being initialized, please wait...
-                    </div>
-                    <div className="container box">
-                        <Link to="/privacy">Privacy & Contact</Link>
-                    </div>
-                </>
-            )
-        }
-
+    if (msg !== null) {
         return (
             <>
                 <div className="container box">
-                    Loading...
+                    { msg }
                 </div>
                 <div className="container box">
                     <Link to="/privacy">Privacy & Contact</Link>
@@ -133,12 +144,17 @@ export default function MainForm() {
 
     return (
         <>
+            {
+                showVictory
+                ? <WinningForm close={() => { setShowVictory(false) }} state={data!} />
+                : <></>
+            }
             <div className="container box">
                 <input ref={inputRef} disabled={!canType} value={input} onChange={x => setInput((x.target as HTMLInputElement).value)} type="text" onKeyDown={e => {
                     if (e.key === "Enter")
                     {
                         setCanType(false)
-                        fetch(`/api/validate/${input}`)
+                        fetch(`${getEndpoint()}/api/validate/${input}`)
                         .then(x => {
                             if (x.ok) return x.json();
                             throw new Error();
@@ -155,6 +171,10 @@ export default function MainForm() {
                                     description: descriptionTokens
                                 };
                                 localStorage.setItem("state", JSON.stringify(newData));
+                                if (didWin(newData.name))
+                                {
+                                    setShowVictory(true);
+                                }
                                 return newData;
                             })
                             setInput("");
@@ -164,8 +184,8 @@ export default function MainForm() {
                     }
                 }} />
             </div>
-            <GuessAreaForm data={data.name} />
-            <GuessAreaForm data={data.description} />
+            <GuessAreaForm data={data!.name} />
+            <GuessAreaForm data={data!.description} />
             <div className="container box">
                 <Link to="/privacy">Privacy & Contact</Link>
             </div>
