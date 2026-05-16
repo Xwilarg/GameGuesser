@@ -75,7 +75,7 @@ public class GameController : ControllerBase
 
     [HttpGet("info")]
     [ProducesResponseType<GameInfo>(200)]
-    [ProducesResponseType(204)]
+    [ProducesResponseType<LoadingGameInfo>(200)]
     public async Task<IActionResult> GetInfo()
     {
         var config = _configManager.GetConfig();
@@ -83,10 +83,11 @@ public class GameController : ControllerBase
 
         if (config.LastUpdate != now)
         {
-            if (_configManager.IsUpdating) return StatusCode(StatusCodes.Status204NoContent);
+            if (_configManager.IsUpdating)
+                return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = _configManager.Progression });
 
             _configManager.Update();
-            return StatusCode(StatusCodes.Status204NoContent);
+            return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = 0 });
         }
 
         return StatusCode(StatusCodes.Status200OK, new GameInfo()

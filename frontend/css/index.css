@@ -33,8 +33,9 @@ body {
         background-size:calc(var(--bg-size) * 1.333) calc(var(--bg-size) * 2);
 }
 
-a {
+a, .link {
     color: rgb(235, 184, 184);
+    text-decoration: underline;
 }
 
 button, .button {
@@ -111,7 +112,7 @@ input[type=text] {
 .modal {
     position: fixed;
     width: 500px;
-    height: 300px;
+    height: 450px;
     transform: translate(-50%, -50%);
     top: 50%;
     left: 50%;
@@ -120,6 +121,8 @@ input[type=text] {
     border: var(--border);
     border-radius: var(--border-radius);
     z-index: 1;
+}
+.winning-modal {
     flex-direction: column;
 }
 @media (max-width: 1500px) {

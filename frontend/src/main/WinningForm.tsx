@@ -20,7 +20,7 @@ export default function WinningForm({ state, close }: WinningFormProps) {
     }
 
     return (
-        <div className='modal is-flex flex-center-hor flex-center-ver'>
+        <div className='modal is-flex flex-center-hor flex-center-ver winning-modal'>
             <h1>You finished the {getGameName()} #{state.iteration}</h1>
             <div className="is-flex">
                 <button onClick={() => {

@@ -2,20 +2,24 @@ import { useEffect, useRef, useState } from "react"
 import GuessAreaForm from "./GuessAreaForm"
 import { Link } from "react-router"
 import WinningForm from "./WinningForm"
+import RulesForm from "./RulesForm"
 
+// Class returned when first connecting to the server, sharing the game state
 export interface GameData
 {
-    iteration: number
-    name: GameWordData[]
-    description: GameWordData[]
+    isReady: boolean // Is game loaded or still loading in the backend
+    progression?: number // Is game is not loading, percentage of initialization
+    iteration: number // Which "day" we are on the game
+    name: GameWordData[] // Game name
+    description: GameWordData[] // Game description
 }
 
 export interface GameWordData
 {
-    wasJustFound: boolean
-    displayedWord: string | null
+    wasJustFound: boolean // Did we just found the word (to highlight it)
+    displayedWord: string | null // Word to display, null is we show a black square instead
     displayAsClose: number | null // Word was not found but we are close
-    length: number
+    length: number // Length of the word
 }
 
 interface WordData
@@ -26,20 +30,20 @@ interface WordData
 
 interface WordBlockData
 {
-    foundIndexes: WordFoundInfo[]
-    closeIndexes: WordIndexScoreInfo[]
+    foundIndexes: WordFoundInfo[] // Words found
+    closeIndexes: WordIndexScoreInfo[] // Words we are close of
 }
 
 interface WordFoundInfo
 {
     index: number
-    word: string
+    word: string // Corrected version of the word
 }
 
 interface WordIndexScoreInfo
 {
     index: number
-    score: number
+    score: number // Between 0 and 1, how close the word is from the one we need to find
 }
 
 function getEndpoint(): string
@@ -63,6 +67,7 @@ export default function MainForm() {
     let [input, setInput] = useState("");
     let [canType, setCanType] = useState(true);
     let [showVictory, setShowVictory] = useState(false);
+    let [showRules, setShowRules] = useState((localStorage.getItem("rules") ?? "0") !== "1");
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -71,12 +76,13 @@ export default function MainForm() {
         function getApiInfo() {
             fetch(`${getEndpoint()}/api/info`)
             .then(x => {
-                if (x.status === 204) {
-                    setMsg("Data are being initialized, please wait...")
-                    timeoutID = setTimeout(getApiInfo, 1_000);
-                    return;
-                }
                 return x.json().then((x: GameData) => {
+                    if (!x.isReady) { // Backend is not ready yet...
+                        setMsg(`First connection of the day, data are being initialized, please wait... ${x.progression}%`);
+                        timeoutID = setTimeout(getApiInfo, 1_000);
+                        return;
+                    }
+
                     if (parseInt(localStorage.getItem("iteration") ?? "0") === x.iteration) {
                         try
                         {
@@ -138,6 +144,11 @@ export default function MainForm() {
     if (msg !== null) {
         return (
             <>
+                {
+                    showRules
+                    ? <RulesForm close={() => { setShowRules(false); localStorage.setItem("rules", "1"); }} />
+                    : <></>
+                }
                 <div className="container box">
                     { msg }
                 </div>
@@ -150,6 +161,11 @@ export default function MainForm() {
 
     return (
         <>
+            {
+                showRules
+                ? <RulesForm close={() => { setShowRules(false); localStorage.setItem("rules", "1"); }} />
+                : <></>
+            }
             {
                 showVictory
                 ? <WinningForm close={() => { setShowVictory(false) }} state={data!} />
@@ -172,6 +188,8 @@ export default function MainForm() {
                                 updateTokenList(nameTokens, x.name);
                                 updateTokenList(descriptionTokens, x.description);
                                 let newData = {
+                                    isReady: true,
+                                    progression: undefined,
                                     iteration: d!.iteration,
                                     name: nameTokens,
                                     description: descriptionTokens
@@ -192,8 +210,9 @@ export default function MainForm() {
             </div>
             <GuessAreaForm data={data!.name} />
             <GuessAreaForm data={data!.description} />
-            <div className="container box">
+            <div className="container box is-flex">
                 <Link to="/privacy">Privacy & Contact</Link>
+                <a onClick={() => setShowRules(true) }>Show rules</a>
             </div>
         </>
     )
