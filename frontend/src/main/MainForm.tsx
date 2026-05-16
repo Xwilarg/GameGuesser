@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import GuessAreaForm from "./GuessAreaForm"
+import { Link } from "react-router"
 
 interface GameData
 {
@@ -84,16 +85,26 @@ export default function MainForm() {
     if (!data) {
         if (isLoadingData) {
             return (
-                <div className="container box">
-                    Data are being initialized, please wait...
-                </div>
+                <>
+                    <div className="container box">
+                        Data are being initialized, please wait...
+                    </div>
+                    <div className="container box">
+                        <Link to="/privacy">Privacy & Contact</Link>
+                    </div>
+                </>
             )
         }
 
         return (
-            <div className="container box">
-                Loading...
-            </div>
+            <>
+                <div className="container box">
+                    Loading...
+                </div>
+                <div className="container box">
+                    <Link to="/privacy">Privacy & Contact</Link>
+                </div>
+            </>
         )
     }
 
@@ -129,6 +140,9 @@ export default function MainForm() {
             </div>
             <GuessAreaForm data={data.name} />
             <GuessAreaForm data={data.description} />
+            <div className="container box">
+                <Link to="/privacy">Privacy & Contact</Link>
+            </div>
         </>
     )
 }

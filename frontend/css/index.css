@@ -33,6 +33,23 @@ body {
         background-size:calc(var(--bg-size) * 1.333) calc(var(--bg-size) * 2);
 }
 
+a {
+    color: rgb(235, 184, 184);
+}
+
+button, .button {
+    background-color: transparent;
+    border: var(--border);
+    color: white;
+    border-radius: var(--border-radius);
+    padding: 10px;
+    cursor: pointer;
+    font-family: "Quantico", sans-serif;
+    font-size: 15px;
+    font-weight: bold;
+    text-decoration: none;
+}
+
 /* Container components */
 .container {
     background-color: var(--primary-background);
