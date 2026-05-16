@@ -11,7 +11,7 @@ function getCompletion(state: GameData) {
         if (token.displayAsClose !== null) found += 0.5;
         else if (token.displayedWord !== null) found += 1;
     }
-    return found / state.description.length;
+    return found / state.description.length * 100.0;
 }
 
 export default function WinningForm({ state, close }: WinningFormProps) {
@@ -25,15 +25,7 @@ export default function WinningForm({ state, close }: WinningFormProps) {
             <div className="is-flex">
                 <button onClick={() => {
                     let shareText = `${getGameName()} #${state.iteration}\nCompletion: ${getCompletion(state).toFixed(1)}%\n\n${window.location}`;
-                    let shareData = {text: shareText};
-                    if (navigator.share && navigator.canShare(shareData))
-                    {
-                        navigator.share(shareData);
-                    }
-                    else
-                    {
-                        window.prompt("Copy to share", shareText)
-                    }
+                    window.prompt("Copy to share", shareText)
                 }}>Share</button>
                 <button onClick={close}>Close</button>
             </div>
