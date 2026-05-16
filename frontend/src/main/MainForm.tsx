@@ -26,8 +26,14 @@ interface WordData
 
 interface WordBlockData
 {
-    foundIndexes: number[]
+    foundIndexes: WordFoundInfo[]
     closeIndexes: WordIndexScoreInfo[]
+}
+
+interface WordFoundInfo
+{
+    index: number
+    word: string
 }
 
 interface WordIndexScoreInfo
@@ -122,10 +128,10 @@ export default function MainForm() {
                 tokens[ci.index].displayAsClose = ci.score;
             }
         }
-        for (let i of x.foundIndexes) {
-            tokens[i].wasJustFound = true;
-            tokens[i].displayedWord = input;
-            tokens[i].displayAsClose = null;
+        for (let fi of x.foundIndexes) {
+            tokens[fi.index].wasJustFound = true;
+            tokens[fi.index].displayedWord = fi.word;
+            tokens[fi.index].displayAsClose = null;
         }
     }
 

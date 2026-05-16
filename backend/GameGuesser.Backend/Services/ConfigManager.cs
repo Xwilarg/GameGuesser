@@ -1,6 +1,7 @@
 ﻿using GameGuesser.Backend.Models;
 using GameGuesser.Backend.Models.Api;
 using GameGuesser.Backend.Models.Responses;
+using Humanizer;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
@@ -55,7 +56,18 @@ public class ConfigManager
         File.WriteAllText(Path, JsonSerializer.Serialize(config, _options));
     }
 
-    private Token[] StringToTokens(string text)
+    private string[] GetAcceptedWords(string word)
+    {
+        var wordLower = word.ToLowerInvariant();
+        List<string> acceptedWords = [wordLower];
+        var singular = wordLower.Singularize(inputIsKnownToBePlural: false);
+        var plural = wordLower.Pluralize(inputIsKnownToBeSingular: false);
+        if (singular != wordLower) acceptedWords.Add(singular);
+        if (plural != wordLower) acceptedWords.Add(plural);
+        return acceptedWords.ToArray();
+    }
+
+    private async Task<Token[]> StringToTokensAsync(string text)
     {
         List<Token> tokens = [];
         StringBuilder currWord = new();
@@ -69,10 +81,12 @@ public class ConfigManager
             {
                 if (!string.IsNullOrEmpty(currWord.ToString())) // We stored letters before so we have a pending word
                 {
+                    var word = currWord.ToString();
                     tokens.Add(new()
                     {
                         NeedToBeGuessed = true,
-                        Word = currWord.ToString()
+                        Word = word,
+                        AcceptedWords = GetAcceptedWords(word)
                     });
                     currWord = new();
                 }
@@ -85,10 +99,12 @@ public class ConfigManager
         }
         if (!string.IsNullOrEmpty(currWord.ToString())) // String ends with a pending word
         {
+            var word = currWord.ToString();
             tokens.Add(new()
             {
                 NeedToBeGuessed = true,
-                Word = currWord.ToString()
+                Word = word,
+                AcceptedWords = GetAcceptedWords(word)
             });
         }
 
@@ -100,7 +116,7 @@ public class ConfigManager
             {
                 if (!adjacents.ContainsKey(token.Word.ToLowerInvariant()))
                 {
-                    adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<SimilarInfo[]>(_client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}").GetAwaiter().GetResult(), _jsonOpt)!.Select(x => x.Word).ToArray());
+                    adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<SimilarInfo[]>(await _client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}"), _jsonOpt)!.Select(x => x.Word).ToArray());
                 }
 
                 token.SimilarWords = adjacents[token.Word.ToLowerInvariant()];
@@ -111,7 +127,7 @@ public class ConfigManager
 
     public void Update()
     {
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             try
             {
@@ -119,16 +135,20 @@ public class ConfigManager
                 var now = DateTime.UtcNow.ToString("yyyyMMdd");
 
                 // Get game data
-                var resp = JsonSerializer.Deserialize<SteamGameInfo>(_client.GetStringAsync($"https://store.steampowered.com/api/appdetails?appids={Games[_rand.Next(0, Games.Length)]}&l=english").GetAwaiter().GetResult(), new JsonSerializerOptions()
+                var game = Games[_rand.Next(0, Games.Length)];
+                Console.WriteLine($"Getting description of game {game}");
+                var resp = JsonSerializer.Deserialize<SteamGameInfo>(await _client.GetStringAsync($"https://store.steampowered.com/api/appdetails?appids={game}&l=english"), new JsonSerializerOptions()
                 {
                     PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
                 })!.First()!;
 
-                var desc = Regex.Replace(WebUtility.HtmlDecode(Regex.Unescape(resp.Value.Data.DetailedDescription)).Replace("\t", ""), "<[^>]+>", "");
+                var desc = WebUtility.HtmlDecode(resp.Value.Data.DetailedDescription).Replace("\t", "");
+                desc = Regex.Replace(desc, "<[^>]+>", " "); // Remove HTML tags, we insert a space in case we have stuff like <h1>Title text</h1>Next text
+                desc = Regex.Replace(desc, " +", " "); // Collapse spaces
 
                 // Parse description into tokens
-                var tokensDesc = StringToTokens(desc);
-                var tokensName = StringToTokens(resp.Value.Data.Name);
+                var tokensDesc = await StringToTokensAsync(desc);
+                var tokensName = await StringToTokensAsync(resp.Value.Data.Name);
 
                 config = new()
                 {

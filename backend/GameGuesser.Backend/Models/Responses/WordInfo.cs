@@ -8,13 +8,19 @@
 
     public class WordBlockInfo
     {
-        public required int[] FoundIndexes { set; get; }
+        public required WordFoundInfo[] FoundIndexes { set; get; }
         public required WordIndexScoreInfo[] CloseIndexes { set; get; }
+    }
+
+    public class WordFoundInfo
+    {
+        public required int Index { set; get; }
+        public required string Word { set; get; } // Corrected version of the word
     }
 
     public class WordIndexScoreInfo
     {
-        public int Index { set; get; }
-        public float Score { set; get; }
+        public required int Index { set; get; }
+        public required float Score { set; get; } // How close the word is
     }
 }

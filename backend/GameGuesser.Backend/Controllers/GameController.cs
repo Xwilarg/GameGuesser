@@ -25,13 +25,17 @@ public class GameController : ControllerBase
 
     private WordBlockInfo GetFoundWords(Token[] tokens, string word)
     {
-        List<int> foundIndexes = new();
-        List<WordIndexScoreInfo> closeIndexes = new();
+        List<WordFoundInfo> foundIndexes = [];
+        List<WordIndexScoreInfo> closeIndexes = [];
         for (int i = 0; i < tokens.Length; i++)
         {
-            if (string.Compare(tokens[i].Word, word, true) == 0)
+            if (tokens[i].AcceptedWords.Contains(word))
             {
-                foundIndexes.Add(i);
+                foundIndexes.Add(new()
+                {
+                    Word = tokens[i].Word,
+                    Index = i
+                });
             }
             if (tokens[i].SimilarWords.Any(x => string.Compare(x, word, true) == 0))
             {
@@ -58,7 +62,7 @@ public class GameController : ControllerBase
             return StatusCode(StatusCodes.Status400BadRequest);
         }
 
-        word = word.Trim();
+        word = word.Trim().ToLowerInvariant();
 
         var config = _configManager.GetConfig();
         
