@@ -4,6 +4,7 @@ import { Link } from "react-router"
 
 interface GameData
 {
+    iteration: number
     name: GameWordData[]
     description: GameWordData[]
 }
@@ -54,7 +55,25 @@ export default function MainForm() {
                 }
                 return x.json().then((x: GameData) => {
                     setIsLoadingData(true);
-                    setData(x);
+
+                    if (parseInt(localStorage.getItem("iteration") ?? "0") === x.iteration) {
+                        try
+                        {
+                            setData(JSON.parse(localStorage.getItem("state")!));
+                        }
+                        catch
+                        {
+                            console.warn("Failed to deserialize game state from local storation, resetting data");
+                            localStorage.setItem("iteration", x.iteration.toString());
+                            localStorage.setItem("state", "{}");
+                            setData(x);
+                        }
+                    } else {
+                        localStorage.setItem("iteration", x.iteration.toString());
+                        localStorage.setItem("state", "{}");
+                        
+                        setData(x);
+                    }
                 });
             });
         }
@@ -130,10 +149,13 @@ export default function MainForm() {
                                 let descriptionTokens = [...d!.description];
                                 updateTokenList(nameTokens, x.name);
                                 updateTokenList(descriptionTokens, x.description);
-                                return { 
+                                let newData = {
+                                    iteration: d!.iteration,
                                     name: nameTokens,
                                     description: descriptionTokens
                                 };
+                                localStorage.setItem("state", JSON.stringify(newData));
+                                return newData;
                             })
                             setInput("");
                             setCanType(true);
