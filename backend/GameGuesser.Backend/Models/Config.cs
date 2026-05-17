@@ -17,7 +17,7 @@
     {
         public required string Word { set; get; }
         public required bool NeedToBeGuessed { set; get; }
-        public string[] SimilarWords { set; get; } = [];
-        public string[] AcceptedWords { set; get; } = [];
+        public string[]? SimilarWords { set; get; } = [];
+        public string[]? AcceptedWords { set; get; } = [];
     }
 }

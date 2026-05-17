@@ -1,9 +1,25 @@
 ﻿using FluentAssertions;
+using GameGuesser.Backend.Interfaces;
+using GameGuesser.Backend.Models;
 using GameGuesser.Backend.Services;
 using System.Text.Json;
 
 namespace GameGuesser.Backend.Test
 {
+    public class WordHttpClient : IHttpHandler
+    {
+        public Task<string> GetStringAsync(string url)
+        {
+            return Task.FromResult("""
+                              [{
+                  "word": "test",
+                  "score": 39972497,
+                  "tags": []
+                }]
+                """);
+        }
+    }
+
     public class ParsingTests
     {
         private ConfigManager _config;
@@ -15,7 +31,7 @@ namespace GameGuesser.Backend.Test
             _config = new(new JsonSerializerOptions()
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }, new HttpClient(), new Random());
+            }, new WordHttpClient(), new Random());
             await _config.InitAsync();
         }
 
@@ -34,6 +50,110 @@ namespace GameGuesser.Backend.Test
         public void TestDecodeHtml(string html, string decoded)
         {
             _config.DecodeHtml(html).Should().Be(decoded);
+        }
+
+        [Test]
+        public async Task TestTokenParsing()
+        {
+            var tokens = await _config.StringToTokensAsync("a great journey to drink water, with you");
+            tokens.Should().BeEquivalentTo([
+                new Token()
+                {
+                    Word = "a",
+                    NeedToBeGuessed = true,
+                    SimilarWords = [ "test" ],
+                    AcceptedWords = [ "a", "as" ]
+                },
+                new Token()
+                {
+                    Word = " ",
+                    NeedToBeGuessed = false
+                },
+                new Token()
+                {
+                    Word = "great",
+                    NeedToBeGuessed = true,
+                    SimilarWords = [ "test" ],
+                    AcceptedWords = [ "great", "greats" ]
+                },
+                new Token()
+                {
+                    Word = " ",
+                    NeedToBeGuessed = false
+                },
+                new Token()
+                {
+                    Word = "journey",
+                    NeedToBeGuessed = true,
+                    SimilarWords = [ "test" ],
+                    AcceptedWords = [ "journey", "journeys", "journeying", "journeyed" ]
+                },
+                new Token()
+                {
+                    Word = " ",
+                    NeedToBeGuessed = false
+                },
+                new Token()
+                {
+                    Word = "to",
+                    NeedToBeGuessed = true,
+                    SimilarWords = [ "test" ],
+                    AcceptedWords = [ "to", "tos" ]
+                },
+                new Token()
+                {
+                    Word = " ",
+                    NeedToBeGuessed = false
+                },
+                new Token()
+                {
+                    Word = "drink",
+                    NeedToBeGuessed = true,
+                    SimilarWords = [ "test" ],
+                    AcceptedWords = [ "drink", "drank", "drunk", "drinks", "drinking" ]
+                },
+                new Token()
+                {
+                    Word = " ",
+                    NeedToBeGuessed = false
+                },
+                new Token()
+                {
+                    Word = "water",
+                    NeedToBeGuessed = true,
+                    SimilarWords = [ "test" ],
+                    AcceptedWords = [ "water", "waters", "watered", "watering" ]
+                },
+                new Token()
+                {
+                    Word = ",",
+                    NeedToBeGuessed = false
+                },
+                new Token()
+                {
+                    Word = " ",
+                    NeedToBeGuessed = false
+                },
+                new Token()
+                {
+                    Word = "with",
+                    NeedToBeGuessed = true,
+                    SimilarWords = [ "test" ],
+                    AcceptedWords = [ "with", "withs" ]
+                },
+                new Token()
+                {
+                    Word = " ",
+                    NeedToBeGuessed = false
+                },
+                new Token()
+                {
+                    Word = "you",
+                    NeedToBeGuessed = true,
+                    SimilarWords = [ "test" ],
+                    AcceptedWords = [ "you", "yous" ]
+                },
+            ]);
         }
     }
 }

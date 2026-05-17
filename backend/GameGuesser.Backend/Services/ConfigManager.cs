@@ -1,4 +1,5 @@
-﻿using GameGuesser.Backend.Models;
+﻿using GameGuesser.Backend.Interfaces;
+using GameGuesser.Backend.Models;
 using GameGuesser.Backend.Models.Api;
 using GameGuesser.Backend.Models.Responses;
 using Humanizer;
@@ -15,7 +16,7 @@ namespace GameGuesser.Backend.Services;
 /// </summary>
 public class ConfigManager
 {
-    public ConfigManager(JsonSerializerOptions options, HttpClient client, Random rand)
+    public ConfigManager(JsonSerializerOptions options, IHttpHandler client, Random rand)
     {
         _options = options;
         _client = client;
@@ -35,7 +36,7 @@ public class ConfigManager
     }
 
     private JsonSerializerOptions _options;
-    private HttpClient _client;
+    private IHttpHandler _client;
     private Random _rand;
     public bool IsUpdating { set; get; } = false;
     public int Progression { private set; get; } = 0;
@@ -104,7 +105,7 @@ public class ConfigManager
     /// </summary>
     /// <param name="text">Text to split</param>
     /// <param name="onProgress">Callback that return progress when we do HTTP requests (which is the operation taking the most time</param>
-    private async Task<Token[]> StringToTokensAsync(string text, Action<int>? onProgress = null)
+    public async Task<Token[]> StringToTokensAsync(string text, Action<int>? onProgress = null)
     {
         List<Token> tokens = [];
         StringBuilder currWord = new();

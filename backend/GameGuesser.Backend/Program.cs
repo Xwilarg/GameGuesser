@@ -1,3 +1,4 @@
+using GameGuesser.Backend.Interfaces;
 using GameGuesser.Backend.Services;
 using System.Text.Json;
 
@@ -10,7 +11,7 @@ builder.Services.AddSingleton(new JsonSerializerOptions()
 });
 builder.Services.AddSingleton<ConfigManager>();
 builder.Services.AddSingleton<Random>();
-builder.Services.AddHttpClient();
+builder.Services.AddSingleton<IHttpHandler, GameGuesser.Backend.Services.HttpClientHandler>();
 
 builder.Services.AddCors(options =>
 {

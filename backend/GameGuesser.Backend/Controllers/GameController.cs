@@ -1,4 +1,5 @@
-﻿using GameGuesser.Backend.Models;
+﻿using GameGuesser.Backend.Interfaces;
+using GameGuesser.Backend.Models;
 using GameGuesser.Backend.Models.Responses;
 using GameGuesser.Backend.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -12,10 +13,10 @@ public class GameController : ControllerBase
 {
     private readonly ILogger<GameController> _logger;
     private readonly ConfigManager _configManager;
-    private readonly HttpClient _client;
+    private readonly IHttpHandler _client;
     private readonly JsonSerializerOptions _jsonOpt;
 
-    public GameController(ILogger<GameController> logger, ConfigManager configManager, HttpClient client, JsonSerializerOptions jsonOpt)
+    public GameController(ILogger<GameController> logger, ConfigManager configManager, IHttpHandler client, JsonSerializerOptions jsonOpt)
     {
         _logger = logger;
         _configManager = configManager;
