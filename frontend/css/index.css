@@ -36,6 +36,7 @@ body {
 a, .link {
     color: rgb(235, 184, 184);
     text-decoration: underline;
+    cursor: pointer;
 }
 
 button, .button {
@@ -118,6 +119,11 @@ button, .button {
     scrollbar-color: var(--primary-light) transparent;
     align-items: baseline;
 }
+@media (max-width: 750px) {
+    #guess-desc {
+        height: calc(100vh - 430px);
+    }
+}
 
 /* Input */
 
@@ -174,7 +180,6 @@ button, .button {
         padding-left: 10px;
     }
 }
-
 
 input[type=text] {
     background-color: transparent;

@@ -27,6 +27,7 @@ export default function MainForm() {
     let [msg, setMsg] = useState<string | null>("Loading...");
     let [input, setInput] = useState("");
     let [canType, setCanType] = useState(true);
+    let [haveWon, setHaveWon] = useState(false);
     let [showVictory, setShowVictory] = useState(false);
     let [showRules, setShowRules] = useState((localStorage.getItem("rules") ?? "0") !== "1");
     let [lastInput, setLastInput] = useState<LastWordInfo | null>(null);
@@ -65,8 +66,8 @@ export default function MainForm() {
                         {
                             const state: GameData = JSON.parse(localStorage.getItem("state")!);
                             setData(state);
-                            if (didWin(state.name))
-                            {
+                            if (didWin(state.name)) {
+                                setHaveWon(true);
                                 setShowVictory(true);
                             }
                         }
@@ -175,8 +176,8 @@ export default function MainForm() {
                                     shortDescription: shortDescriptionTokens
                                 };
                                 localStorage.setItem("state", JSON.stringify(newData));
-                                if (didWin(newData.name))
-                                {
+                                if (!haveWon && didWin(newData.name)) {
+                                    setHaveWon(true);
                                     setShowVictory(true);
                                 }
                                 return newData;
@@ -205,6 +206,11 @@ export default function MainForm() {
             <div className="container box is-flex">
                 <Link to="/privacy">Privacy & Contact</Link>
                 <a onClick={() => setShowRules(true) }>Show rules</a>
+                {
+                    haveWon
+                    ? <a onClick={() => setShowVictory(true) }>Show victory popup</a>
+                    : <></>
+                }
             </div>
         </>
     )
