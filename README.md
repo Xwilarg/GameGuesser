@@ -12,7 +12,7 @@ For list of upcoming features, please check https://github.com/users/Xwilarg/pro
 ## Contributing
 Feel free to open a pull request or an issue for features you would like
 
-Do test the game locally, simply clone the repository, start the backend and do `npm i` then `npm run dev` in the frontend folder
+To test the game locally, simply clone the repository, start the backend and do `npm i` then `npm run dev` in the frontend folder
 
 ## Play
 
