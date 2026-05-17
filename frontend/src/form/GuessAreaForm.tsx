@@ -1,19 +1,21 @@
 import { forwardRef } from "react";
-import type { GameWordData } from "./MainForm";
+import type { GameWordData } from "../model/GameData";
+import type { WordBlockData } from "../model/WordData";
 
 interface GuessAreaFormProps {
     data: GameWordData[]
+    lastInput: WordBlockData | null
     id: string
 }
 
 const GuessAreaForm = forwardRef((
-    { data, id }: GuessAreaFormProps,
+    { data, id, lastInput }: GuessAreaFormProps,
     _
 ) => {
     return <div className="container box is-flex word-list" id={id}>
     {
         data.map((x, index) => {
-            if (x.wasJustFound)
+            if (lastInput !== null && lastInput.foundIndexes.some(x => x.index === index))
             {
                 return <span key={index} className="found-word">{x.displayedWord}</span> // We just found this word, we highlight it
             }

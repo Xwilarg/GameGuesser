@@ -1,8 +1,8 @@
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from "react-router";
-import MainForm from './main/MainForm';
 import { type ReactElement } from 'react';
-import PrivacyForm from './main/PrivacyForm';
+import PrivacyForm from './form/PrivacyForm';
+import MainForm from './form/MainForm';
 
 function AppRouter() : ReactElement {
     return (

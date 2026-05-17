@@ -87,7 +87,6 @@ button, .button {
     align-items: center;
 }
 
-
 /* Word display area */
 .hidden-word {
     background-color: black;
@@ -102,13 +101,68 @@ button, .button {
     font-family: "Google Sans Code", monospace;
 }
 #guess-desc {
-    height: calc(100vh - 220px);
+    height: calc(100vh - 230px);
     overflow-y: scroll;
     scrollbar-width: thin;
     scrollbar-color: var(--primary-light) transparent;
 }
 
 /* Input */
+
+#input-area {
+    height: 40px;
+    position: relative;
+}
+#input-area input[type=text] {
+    width: 300px;
+    height: 28px;
+    font-size: 20px;
+}
+#input-area #last-input {
+    position: absolute;
+    margin: 0;
+    height: 40px;
+    right: 10px;
+    font-size: 25px;
+    gap: 0;
+}
+#input-area #last-word {
+    margin-right: 10px;
+}
+#last-close {
+    background-color: rgb(133, 86, 0);
+    padding-left: 10px;
+    padding-right: 10px;
+    border-top-right-radius: var(--border-radius);
+    border-bottom-right-radius: var(--border-radius);
+    width: 25px;
+    text-align: center;
+}
+#last-found {
+    background-color: rgb(92, 138, 92);
+    padding-left: 10px;
+    padding-right: 10px;
+    border-top-left-radius: var(--border-radius);
+    border-bottom-left-radius: var(--border-radius);
+    width: 25px;
+    text-align: center;
+}
+@media (max-width: 750px) {
+    #input-area {
+        height: 80px;
+    }
+
+    #input-area #last-input {
+        position: relative;
+        width: 100%;
+        padding-left: 10px;
+    }
+    #input-area #last-word {
+        order: 1;
+        padding-left: 10px;
+    }
+}
+
 
 input[type=text] {
     background-color: transparent;

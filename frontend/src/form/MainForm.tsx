@@ -3,48 +3,9 @@ import GuessAreaForm from "./GuessAreaForm"
 import { Link } from "react-router"
 import WinningForm from "./WinningForm"
 import RulesForm from "./RulesForm"
-
-// Class returned when first connecting to the server, sharing the game state
-export interface GameData
-{
-    isReady: boolean // Is game loaded or still loading in the backend
-    progression?: number // Is game is not loading, percentage of initialization
-    iteration: number // Which "day" we are on the game
-    name: GameWordData[] // Game name
-    description: GameWordData[] // Game description
-}
-
-export interface GameWordData
-{
-    wasJustFound: boolean // Did we just found the word (to highlight it)
-    displayedWord: string | null // Word to display, null is we show a black square instead
-    displayAsClose: number | null // Word was not found but we are close
-    length: number // Length of the word
-}
-
-interface WordData
-{
-    name: WordBlockData
-    description: WordBlockData
-}
-
-interface WordBlockData
-{
-    foundIndexes: WordFoundInfo[] // Words found
-    closeIndexes: WordIndexScoreInfo[] // Words we are close of
-}
-
-interface WordFoundInfo
-{
-    index: number
-    word: string // Corrected version of the word
-}
-
-interface WordIndexScoreInfo
-{
-    index: number
-    score: number // Between 0 and 1, how close the word is from the one we need to find
-}
+import type { LastWordInfo } from "../model/LastWordInfo"
+import type { GameData, GameWordData } from "../model/GameData"
+import type { WordBlockData, WordData } from "../model/WordData"
 
 function getEndpoint(): string
 {
@@ -68,6 +29,7 @@ export default function MainForm() {
     let [canType, setCanType] = useState(true);
     let [showVictory, setShowVictory] = useState(false);
     let [showRules, setShowRules] = useState((localStorage.getItem("rules") ?? "0") !== "1");
+    let [lastInput, setLastInput] = useState<LastWordInfo | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -125,9 +87,6 @@ export default function MainForm() {
     }, [ canType ])
 
     function updateTokenList(tokens: GameWordData[], x: WordBlockData) {
-        for (let token of tokens) {
-            token.wasJustFound = false;
-        }
         for (let ci of x.closeIndexes) {
             if (tokens[ci.index].displayedWord === null || (tokens[ci.index].displayAsClose !== null && ci.score > tokens[ci.index].displayAsClose!)) { // Don't replace words we already found
                 tokens[ci.index].displayedWord = input;
@@ -135,7 +94,6 @@ export default function MainForm() {
             }
         }
         for (let fi of x.foundIndexes) {
-            tokens[fi.index].wasJustFound = true;
             tokens[fi.index].displayedWord = fi.word;
             tokens[fi.index].displayAsClose = null;
         }
@@ -171,7 +129,7 @@ export default function MainForm() {
                 ? <WinningForm close={() => { setShowVictory(false) }} state={data!} />
                 : <></>
             }
-            <div className="container box">
+            <div className="container box is-flex flex-center-ver" id="input-area">
                 <input ref={inputRef} disabled={!canType} value={input} onChange={x => setInput((x.target as HTMLInputElement).value)} type="text" onKeyDown={e => {
                     if (e.key === "Enter")
                     {
@@ -182,6 +140,10 @@ export default function MainForm() {
                             throw new Error();
                         })
                         .then((x: WordData) => {
+                            setLastInput({
+                                word: input,
+                                data: x
+                            });
                             setData(d => {
                                 let nameTokens = [...d!.name];
                                 let descriptionTokens = [...d!.description];
@@ -207,9 +169,20 @@ export default function MainForm() {
                         .catch(_ => setCanType(true));
                     }
                 }} />
+                <p id="last-input" className="is-flex flex-center-ver">
+                {
+                    lastInput ?
+                    <>
+                        <span id="last-word">{ lastInput.word }</span>
+                        <span id="last-found">{lastInput.data.name.foundIndexes.length + lastInput.data.description.foundIndexes.length}</span>
+                        <span id="last-close">{lastInput.data.name.closeIndexes.length + lastInput.data.description.closeIndexes.length}</span>
+                    </>
+                    : <></>
+                }
+                </p>
             </div>
-            <GuessAreaForm data={data!.name} id="guess-name" />
-            <GuessAreaForm data={data!.description} id="guess-desc" />
+            <GuessAreaForm data={data!.name} id="guess-name" lastInput={lastInput?.data?.name ?? null} />
+            <GuessAreaForm data={data!.description} id="guess-desc" lastInput={lastInput?.data?.description ?? null} />
             <div className="container box is-flex">
                 <Link to="/privacy">Privacy & Contact</Link>
                 <a onClick={() => setShowRules(true) }>Show rules</a>
