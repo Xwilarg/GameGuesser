@@ -8,20 +8,20 @@ namespace GameGuesser.Backend.Test
 {
     public class WordHttpClient : IHttpHandler
     {
-        public Task<string> GetStringAsync(string url)
+        public async Task<string> GetStringAsync(string url)
         {
             if (url == "https://raw.githubusercontent.com/monolithpl/verb.forms.dictionary/refs/heads/master/json/verbs-dictionaries.json")
             {
                 using var client = new HttpClient();
-                return client.GetStringAsync(url);
+                return await client.GetStringAsync(url);
             }
-            return Task.FromResult("""
+            return """
                               [{
                   "word": "test",
                   "score": 39972497,
                   "tags": []
                 }]
-                """);
+                """;
         }
     }
 
