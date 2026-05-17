@@ -18,9 +18,9 @@ function getCompletion(state: GameData) {
 
 function getCompletionEmotes(state: GameData) {
     let str = "";
-    for (let token of state.description.filter(x => x.needToBeGuessed)) {
-        if (token.displayAsClose !== null) str += "🟩";
-        else if (token.displayedWord !== null) str += "🟧";
+    for (let token of state.shortDescription.filter(x => x.needToBeGuessed)) {
+        if (token.displayAsClose !== null) str += "🟧";
+        else if (token.displayedWord !== null) str += "🟩";
         else str += "⬛";
     }
     return str;

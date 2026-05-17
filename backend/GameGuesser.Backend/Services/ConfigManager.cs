@@ -61,6 +61,7 @@ public class ConfigManager
                 Game = new()
                 {
                     Description = [],
+                    ShortDescription = [],
                     Name = [],
                 },
                 Iteration = 0,
@@ -167,9 +168,9 @@ public class ConfigManager
 
     public string DecodeHtml(string text)
     {
-        var desc = WebUtility.HtmlDecode(text).Replace("\t", "");
+        var desc = WebUtility.HtmlDecode(text).Replace("<br>", "\n");
         desc = Regex.Replace(desc, "<[^>]+>", " "); // Remove HTML tags, we insert a space in case we have stuff like <h1>Title text</h1>Next text
-        desc = Regex.Replace(desc, @"[\s\u00A0\u200B]+", " "); // Collapse spaces, includes no break spaces (\u00A0) and zero width spaces (\u200B)
+        desc = Regex.Replace(desc, @"[ \t\u00A0\u200B]+", " "); // Collapse spaces, includes no break spaces (\u00A0) and zero width spaces (\u200B)
         return desc.Trim();
     }
 
@@ -200,6 +201,7 @@ public class ConfigManager
                 // Parse description into tokens
                 var tokensName = await StringToTokensAsync(resp.Value.Data.Name);
                 var tokensDesc = await StringToTokensAsync(desc, (value) => { Progression = value; });
+                var tokensShortDesc = await StringToTokensAsync(resp.Value.Data.ShortDescription);
 
                 config = new()
                 {
@@ -207,6 +209,7 @@ public class ConfigManager
                     {
                         Name = tokensName,
                         Description = tokensDesc,
+                        ShortDescription = tokensShortDesc
                     },
                     Iteration = config.Iteration + 1,
                     LastUpdate = now

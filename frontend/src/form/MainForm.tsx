@@ -55,6 +55,10 @@ export default function MainForm() {
                         t.needToBeGuessed = t.displayedWord === null;
                         t.displayAsClose = null;
                     }
+                    for (let t of x.shortDescription) {
+                        t.needToBeGuessed = t.displayedWord === null;
+                        t.displayAsClose = null;
+                    }
 
                     if (parseInt(localStorage.getItem("iteration") ?? "0") === x.iteration) {
                         try
@@ -158,14 +162,17 @@ export default function MainForm() {
                             setData(d => {
                                 let nameTokens = [...d!.name];
                                 let descriptionTokens = [...d!.description];
+                                let shortDescriptionTokens = [...d!.shortDescription];
                                 updateTokenList(nameTokens, x.name);
                                 updateTokenList(descriptionTokens, x.description);
+                                updateTokenList(shortDescriptionTokens, x.shortDescription);
                                 let newData = {
                                     isReady: true,
                                     progression: undefined,
                                     iteration: d!.iteration,
                                     name: nameTokens,
-                                    description: descriptionTokens
+                                    description: descriptionTokens,
+                                    shortDescription: shortDescriptionTokens
                                 };
                                 localStorage.setItem("state", JSON.stringify(newData));
                                 if (didWin(newData.name))
@@ -185,14 +192,15 @@ export default function MainForm() {
                     lastInput ?
                     <>
                         <span id="last-word">{ lastInput.word }</span>
-                        <span id="last-found">{lastInput.data.name.foundIndexes.length + lastInput.data.description.foundIndexes.length}</span>
-                        <span id="last-close">{lastInput.data.name.closeIndexes.length + lastInput.data.description.closeIndexes.length}</span>
+                        <span id="last-found">{lastInput.data.name.foundIndexes.length + lastInput.data.shortDescription.foundIndexes.length + lastInput.data.description.foundIndexes.length}</span>
+                        <span id="last-close">{lastInput.data.name.closeIndexes.length + lastInput.data.shortDescription.closeIndexes.length + lastInput.data.description.closeIndexes.length}</span>
                     </>
                     : <></>
                 }
                 </p>
             </div>
             <GuessAreaForm data={data!.name} id="guess-name" lastInput={lastInput?.data?.name ?? null} />
+            <GuessAreaForm data={data!.shortDescription} id="guess-sdesc" lastInput={lastInput?.data?.shortDescription ?? null} />
             <GuessAreaForm data={data!.description} id="guess-desc" lastInput={lastInput?.data?.description ?? null} />
             <div className="container box is-flex">
                 <Link to="/privacy">Privacy & Contact</Link>

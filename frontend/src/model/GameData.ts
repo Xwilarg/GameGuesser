@@ -6,6 +6,7 @@ export interface GameData
     iteration: number // Which "day" we are on the game
     name: GameWordData[] // Game name
     description: GameWordData[] // Game description
+    shortDescription: GameWordData[] // Game description
 }
 
 export interface GameWordData

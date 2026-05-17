@@ -41,6 +41,10 @@ namespace GameGuesser.Backend.Test
         }
 
         [TestCase(
+            "The Flagship Turn-Based Strategy Game Returns\u003Cbr\u003E\u003Cbr\u003EBecome Ruler of the World by establishing and leading a civilization from the dawn of man into the space age",
+            "The Flagship Turn-Based Strategy Game Returns\n\nBecome Ruler of the World by establishing and leading a civilization from the dawn of man into the space age"
+         )]
+        [TestCase(
             "\u003Cp class=\"bb_paragraph\" \u003E\u003Cstrong\u003E&quot;The most fun you can have online&quot;\u003C/strong\u003E - PC Gamer\u003C/p\u003E\u003Cp class=\"bb_paragraph\" \u003E\u003C/p\u003E\u003Cp class=\"bb_paragraph\" \u003E\t\t\t\t\t\t\t\t\t \u003Cstrong\u003EIs now FREE!",
             "\"The most fun you can have online\" - PC Gamer Is now FREE!"
          )]

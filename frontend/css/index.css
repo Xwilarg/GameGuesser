@@ -100,11 +100,23 @@ button, .button {
     font-size: 1.5em;
     font-family: "Google Sans Code", monospace;
 }
-#guess-desc {
-    height: calc(100vh - 230px);
+.word-list > div {
+    width: 100%;
+    min-height: 30px;
+}
+#guess-sdesc {
+    height: 135px;
     overflow-y: scroll;
     scrollbar-width: thin;
     scrollbar-color: var(--primary-light) transparent;
+    align-items: baseline;
+}
+#guess-desc {
+    height: calc(100vh - 390px);
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-light) transparent;
+    align-items: baseline;
 }
 
 /* Input */

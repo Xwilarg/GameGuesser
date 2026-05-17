@@ -11,6 +11,7 @@
     {
         public required Token[] Name { set; get; }
         public required Token[] Description { set; get; }
+        public required Token[] ShortDescription { set; get; }
     }
 
     public class Token

@@ -4,6 +4,7 @@
     {
         public required WordBlockInfo Name { set; get; }
         public required WordBlockInfo Description { set; get; }
+        public required WordBlockInfo ShortDescription { set; get; }
     }
 
     public class WordBlockInfo

@@ -2,6 +2,7 @@ export interface WordData
 {
     name: WordBlockData
     description: WordBlockData
+    shortDescription: WordBlockData
 }
 
 export interface WordBlockData

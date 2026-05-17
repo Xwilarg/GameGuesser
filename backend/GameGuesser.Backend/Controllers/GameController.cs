@@ -70,7 +70,8 @@ public class GameController : ControllerBase
         return StatusCode(StatusCodes.Status200OK, new WordInfo()
         {
             Name = GetFoundWords(config.Game.Name, word),
-            Description = GetFoundWords(config.Game.Description, word)
+            Description = GetFoundWords(config.Game.Description, word),
+            ShortDescription = GetFoundWords(config.Game.ShortDescription, word)
         });
     }
 
@@ -103,7 +104,12 @@ public class GameController : ControllerBase
             {
                 DisplayedWord = x.NeedToBeGuessed ? null : x.Word,
                 Length = x.Word.Length
-            }).ToArray()
+            }).ToArray(),
+            ShortDescription = config.Game.ShortDescription.Select(x => new GameToken()
+            {
+                DisplayedWord = x.NeedToBeGuessed ? null : x.Word,
+                Length = x.Word.Length
+            }).ToArray(),
         });
     }
 }

@@ -11,6 +11,7 @@
         public bool IsReady => true;
         public required int Iteration { set; get; }
         public required GameToken[] Name { set; get; }
+        public required GameToken[] ShortDescription { set; get; }
         public required GameToken[] Description { set; get; }
     }
 
