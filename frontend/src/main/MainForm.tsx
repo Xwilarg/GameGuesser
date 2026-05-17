@@ -208,8 +208,8 @@ export default function MainForm() {
                     }
                 }} />
             </div>
-            <GuessAreaForm data={data!.name} />
-            <GuessAreaForm data={data!.description} />
+            <GuessAreaForm data={data!.name} id="guess-name" />
+            <GuessAreaForm data={data!.description} id="guess-desc" />
             <div className="container box is-flex">
                 <Link to="/privacy">Privacy & Contact</Link>
                 <a onClick={() => setShowRules(true) }>Show rules</a>

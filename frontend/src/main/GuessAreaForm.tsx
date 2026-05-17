@@ -2,14 +2,15 @@ import { forwardRef } from "react";
 import type { GameWordData } from "./MainForm";
 
 interface GuessAreaFormProps {
-    data: GameWordData[];
+    data: GameWordData[]
+    id: string
 }
 
 const GuessAreaForm = forwardRef((
-    { data }: GuessAreaFormProps,
+    { data, id }: GuessAreaFormProps,
     _
 ) => {
-    return <div className="container box is-flex" id="word-list">
+    return <div className="container box is-flex word-list" id={id}>
     {
         data.map((x, index) => {
             if (x.wasJustFound)

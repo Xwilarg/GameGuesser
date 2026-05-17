@@ -87,6 +87,8 @@ button, .button {
     align-items: center;
 }
 
+
+/* Word display area */
 .hidden-word {
     background-color: black;
     height: 30px;
@@ -95,10 +97,18 @@ button, .button {
     color: rgb(151, 228, 151);
 }
 
-#word-list {
+.word-list {
     font-size: 1.5em;
     font-family: "Google Sans Code", monospace;
 }
+#guess-desc {
+    height: calc(100vh - 220px);
+    overflow-y: scroll;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-light) transparent;
+}
+
+/* Input */
 
 input[type=text] {
     background-color: transparent;
