@@ -45,6 +45,17 @@ export default function MainForm() {
                         return;
                     }
 
+                    // Init field
+                    // We note these fields as "to be guessed" depending of how they are given from the APOI
+                    for (let t of x.name) {
+                        t.needToBeGuessed = t.displayedWord === null;
+                        t.displayAsClose = null;
+                    }
+                    for (let t of x.description) {
+                        t.needToBeGuessed = t.displayedWord === null;
+                        t.displayAsClose = null;
+                    }
+
                     if (parseInt(localStorage.getItem("iteration") ?? "0") === x.iteration) {
                         try
                         {

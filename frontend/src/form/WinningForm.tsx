@@ -1,4 +1,5 @@
-import { getGameName, type GameData } from "./MainForm";
+import type { GameData } from "../model/GameData";
+import { getGameName } from "./MainForm";
 
 interface WinningFormProps {
     state: GameData
@@ -7,11 +8,12 @@ interface WinningFormProps {
 
 function getCompletion(state: GameData) {
     let found = 0.0;
-    for (let token of state.description) {
+    for (let token of state.description.filter(x => x.needToBeGuessed)) {
         if (token.displayAsClose !== null) found += 0.5;
         else if (token.displayedWord !== null) found += 1;
     }
-    return found / state.description.length * 100.0;
+
+    return found / state.description.filter(x => x.needToBeGuessed).length * 100.0;
 }
 
 export default function WinningForm({ state, close }: WinningFormProps) {

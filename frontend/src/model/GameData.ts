@@ -13,4 +13,5 @@ export interface GameWordData
     displayedWord: string | null // Word to display, null is we show a black square instead
     displayAsClose: number | null // Word was not found but we are close
     length: number // Length of the word
+    needToBeGuessed: boolean // Does the word need to be guessed or was it given at the game start
 }
