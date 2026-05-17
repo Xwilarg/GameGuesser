@@ -10,6 +10,11 @@ namespace GameGuesser.Backend.Test
     {
         public Task<string> GetStringAsync(string url)
         {
+            if (url == "https://raw.githubusercontent.com/monolithpl/verb.forms.dictionary/refs/heads/master/json/verbs-dictionaries.json")
+            {
+                using var client = new HttpClient();
+                return client.GetStringAsync(url);
+            }
             return Task.FromResult("""
                               [{
                   "word": "test",
