@@ -15,11 +15,10 @@ namespace GameGuesser.Backend.Services;
 /// </summary>
 public class ConfigManager
 {
-    public ConfigManager(JsonSerializerOptions options, HttpClient client, JsonSerializerOptions jsonOpt, Random rand)
+    public ConfigManager(JsonSerializerOptions options, HttpClient client, Random rand)
     {
         _options = options;
         _client = client;
-        _jsonOpt = jsonOpt;
         _rand = rand;
     }
 
@@ -37,7 +36,6 @@ public class ConfigManager
 
     private JsonSerializerOptions _options;
     private HttpClient _client;
-    private readonly JsonSerializerOptions _jsonOpt;
     private Random _rand;
     public bool IsUpdating { set; get; } = false;
     public int Progression { private set; get; } = 0;
@@ -156,7 +154,7 @@ public class ConfigManager
             {
                 if (!adjacents.ContainsKey(token.Word.ToLowerInvariant()))
                 {
-                    adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<SimilarInfo[]>(await _client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}"), _jsonOpt)!.Select(x => x.Word).ToArray());
+                    adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<SimilarInfo[]>(await _client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}"), _options)!.Select(x => x.Word).ToArray());
                 }
 
                 token.SimilarWords = adjacents[token.Word.ToLowerInvariant()];
@@ -164,6 +162,14 @@ public class ConfigManager
             }
         }
         return tokens.ToArray();
+    }
+
+    public string DecodeHtml(string text)
+    {
+        var desc = WebUtility.HtmlDecode(text).Replace("\t", "");
+        desc = Regex.Replace(desc, "<[^>]+>", " "); // Remove HTML tags, we insert a space in case we have stuff like <h1>Title text</h1>Next text
+        desc = Regex.Replace(desc, @"[\s\u00A0\u200B]+", " "); // Collapse spaces, includes no break spaces (\u00A0) and zero width spaces (\u200B)
+        return desc.Trim();
     }
 
     public void Update()
@@ -188,9 +194,7 @@ public class ConfigManager
                     PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
                 })!.First()!;
 
-                var desc = WebUtility.HtmlDecode(resp.Value.Data.DetailedDescription).Replace("\t", "");
-                desc = Regex.Replace(desc, "<[^>]+>", " "); // Remove HTML tags, we insert a space in case we have stuff like <h1>Title text</h1>Next text
-                desc = Regex.Replace(desc, " +", " "); // Collapse spaces
+                var desc = DecodeHtml(resp.Value.Data.DetailedDescription);
 
                 // Parse description into tokens
                 var tokensName = await StringToTokensAsync(resp.Value.Data.Name);
