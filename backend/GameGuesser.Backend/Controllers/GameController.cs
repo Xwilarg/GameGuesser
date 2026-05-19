@@ -95,8 +95,8 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
 
         if (!ConfigWork.IsUpToDate(ctx, now))
         {
-            if (configManager.IsUpdating)
-                return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = configManager.Progression });
+            if (LocalConfigWork.IsUpdating(ctx, lang.Value))
+                return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = configManager.GetProgression(lang.Value) });
 
             configManager.Update();
             return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = 0 });

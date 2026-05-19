@@ -11,4 +11,9 @@ public static class LocalConfigWork
     {
         return JsonSerializer.Deserialize<GameConfig>(ctx.LocalGames.First(x => x.Language == language).Game!, opt)!;
     }
+
+    public static bool IsUpdating(SqliteContext ctx, Language language)
+    {
+        return ctx.Game.First().IsUpdating || ctx.LocalGames.First(x => x.Language == language).IsUpdating;
+    }
 }

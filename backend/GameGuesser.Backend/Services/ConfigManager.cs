@@ -1,4 +1,5 @@
-﻿using GameGuesser.Backend.Interfaces;
+﻿using GameGuesser.Backend.Database.Models;
+using GameGuesser.Backend.Interfaces;
 using GameGuesser.Backend.Models;
 using GameGuesser.Backend.Models.Api;
 using GameGuesser.Backend.Models.Responses;
@@ -25,8 +26,13 @@ public class ConfigManager
     private JsonSerializerOptions _options;
     private IHttpHandler _client;
     private Random _rand;
-    public bool IsUpdating { set; get; } = false;
-    public int Progression { private set; get; } = 0;
+
+    public Dictionary<Language, int> _progression = new();
+    public int GetProgression(Language language)
+    {
+        if (_progression.TryGetValue(language, out int val)) return val;
+        return 0;
+    }
 
     public int[] Games = // Placeholder list, until I have a batter system to enter games
     [
