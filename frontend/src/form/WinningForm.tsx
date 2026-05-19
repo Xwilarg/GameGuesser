@@ -37,7 +37,9 @@ export default function WinningForm({ state, close }: WinningFormProps) {
             <div className="is-flex">
                 <button onClick={() => {
                     let shareText = `${getGameName()} #${state.iteration}\nCompletion: ${getCompletion(state).toFixed(1)}%\n${getCompletionEmotes(state)}\n\n${window.location}`;
-                    window.prompt("Copy to share", shareText)
+                    navigator.clipboard.writeText(shareText)
+                    .then(() => window.alert("Text copied to clipboard"))
+                    .catch(() => window.prompt("Copy to share", shareText));
                 }}>Share</button>
                 <button onClick={close}>Close</button>
             </div>
