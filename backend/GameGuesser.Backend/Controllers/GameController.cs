@@ -79,15 +79,21 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
         });
     }
 
-    [HttpGet("info")]
+    [HttpGet("info/{language}")]
     [ProducesResponseType<GameInfo>(200)]
     [ProducesResponseType<LoadingGameInfo>(200)]
-    public async Task<IActionResult> GetInfo()
+    [ProducesResponseType<WordInfo>(400)]
+    public async Task<IActionResult> GetInfo(string language)
     {
-        var config = configManager.GetConfig();
+        var lang = StringToLanguage(language);
+        if (lang == null)
+        {
+            return StatusCode(StatusCodes.Status400BadRequest, "The language provided is invalid");
+        }
+
         var now = DateTime.UtcNow.ToString("yyyyMMdd");
 
-        if (config.LastUpdate != now)
+        if (!ConfigWork.IsUpToDate(ctx, now))
         {
             if (configManager.IsUpdating)
                 return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = configManager.Progression });
@@ -96,20 +102,21 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
             return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = 0 });
         }
 
+        var config = LocalConfigWork.GetLocalConfig(ctx, jsonOpt, lang.Value);
         return StatusCode(StatusCodes.Status200OK, new GameInfo()
         {
-            Iteration = config.Iteration,
-            Name = config.Game.Name.Select(x => new GameToken()
+            Iteration = ConfigWork.GetIteration(ctx),
+            Name = config.Name.Select(x => new GameToken()
             {
                 DisplayedWord = x.NeedToBeGuessed ? null : x.Word,
                 Length = x.Word.Length
             }).ToArray(),
-            Description = config.Game.Description.Select(x => new GameToken()
+            Description = config.Description.Select(x => new GameToken()
             {
                 DisplayedWord = x.NeedToBeGuessed ? null : x.Word,
                 Length = x.Word.Length
             }).ToArray(),
-            ShortDescription = config.Game.ShortDescription.Select(x => new GameToken()
+            ShortDescription = config.ShortDescription.Select(x => new GameToken()
             {
                 DisplayedWord = x.NeedToBeGuessed ? null : x.Word,
                 Length = x.Word.Length
