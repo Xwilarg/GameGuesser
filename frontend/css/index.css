@@ -204,6 +204,9 @@ input[type=text] {
     border-radius: var(--border-radius);
     z-index: 1;
 }
+.modal h1 {
+    text-align: center;
+}
 .winning-modal {
     flex-direction: column;
 }
