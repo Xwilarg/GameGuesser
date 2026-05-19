@@ -33,6 +33,11 @@ public class ConfigManager
         if (_progression.TryGetValue(language, out int val)) return val;
         return 0;
     }
+    private void SetProgression(Language language, int value)
+    {
+        if (_progression.ContainsKey(language)) _progression[language] = value;
+        else _progression.Add(language, value);
+    }
 
     public int[] Games = // Placeholder list, until I have a batter system to enter games
     [
