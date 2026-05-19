@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="GameGuesser.Backend.Database/GameGuesser.Backend.Database.csproj" Id="44e38aa9-0ed0-4e63-8750-a00a342a3e5c" />
   <Project Path="GameGuesser.Backend.Test/GameGuesser.Backend.Test.csproj" Id="4f393085-9529-44d5-8cad-fea9829f9be6" />
   <Project Path="GameGuesser.Backend/GameGuesser.Backend.csproj" />
 </Solution>

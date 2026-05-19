@@ -1,3 +1,5 @@
+using GameGuesser.Backend.Database.Context;
+using GameGuesser.Backend.Database.Queries;
 using GameGuesser.Backend.Interfaces;
 using GameGuesser.Backend.Services;
 using System.Text.Json;
@@ -12,6 +14,7 @@ builder.Services.AddSingleton(new JsonSerializerOptions()
 builder.Services.AddSingleton<ConfigManager>();
 builder.Services.AddSingleton<Random>();
 builder.Services.AddSingleton<IHttpHandler, GameGuesser.Backend.Services.HttpClientHandler>();
+builder.Services.AddDbContext<SqliteContext>();
 
 builder.Services.AddCors(options =>
 {
@@ -25,7 +28,7 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 using var scope = app.Services.CreateScope();
-await scope.ServiceProvider.GetRequiredService<ConfigManager>().InitAsync();
+await InitWork.InitAsync(scope.ServiceProvider.GetRequiredService<SqliteContext>(), scope.ServiceProvider.GetRequiredService<HttpClient>());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

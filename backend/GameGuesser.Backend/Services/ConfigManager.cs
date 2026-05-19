@@ -23,25 +23,11 @@ public class ConfigManager
         _rand = rand;
     }
 
-    public async Task InitAsync()
-    {
-        if (!File.Exists(VerbPath))
-        {
-            var verbs = await _client.GetStringAsync("https://raw.githubusercontent.com/monolithpl/verb.forms.dictionary/refs/heads/master/json/verbs-dictionaries.json");
-            File.WriteAllText(VerbPath, verbs);
-            Verbs = JsonSerializer.Deserialize<string[][]>(verbs)!;
-        }
-        else
-            Verbs = JsonSerializer.Deserialize<string[][]>(File.ReadAllText(VerbPath))!;
-    }
-
     private JsonSerializerOptions _options;
     private IHttpHandler _client;
     private Random _rand;
     public bool IsUpdating { set; get; } = false;
     public int Progression { private set; get; } = 0;
-
-    private string[][] Verbs;
 
     public int[] Games = // Placeholder list, until I have a batter system to enter games
         [
