@@ -56,6 +56,7 @@ TemporaryDependencyNodeTargetIdentifier=net10.0
 
 [sourceFiles]
 Controllers/GameController.cs
+Interfaces/IHttpHandler.cs
 Models/
  Api/SteamGameInfo.cs
  Config.cs
@@ -68,7 +69,9 @@ obj/Debug/net10.0/
  GameGuesser.Backend.AssemblyInfo.cs
  GameGuesser.Backend.GlobalUsings.g.cs
 Program.cs
-Services/ConfigManager.cs
+Services/
+ ConfigManager.cs
+ HttpClientHandler.cs
 
 [metadataReferences]
 <DOTNET>/packs/Microsoft.AspNetCore.App.Ref/10.0.4/ref/net10.0/
@@ -380,6 +383,7 @@ Services/ConfigManager.cs
  System.Xml.XPath.dll
  System.Xml.XPath.XDocument.dll
  WindowsBase.dll
+<NUGET>/humanizer.core/3.0.10/lib/net10.0/Humanizer.dll
 
 [analyzerReferences]
 <DOTNET>/packs/Microsoft.AspNetCore.App.Ref/10.0.4/analyzers/dotnet/cs/
@@ -407,6 +411,7 @@ Services/ConfigManager.cs
 <DOTNET>/sdk/10.0.200/Sdks/Microsoft.NET.Sdk/analyzers/
  Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll
  Microsoft.CodeAnalysis.NetAnalyzers.dll
+<NUGET>/humanizer.core/3.0.10/analyzers/dotnet/roslyn4.14/cs/Humanizer.Analyzers.dll
 
 [analyzerConfigFiles]
 <DOTNET>/sdk/10.0.200/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_10_default.globalconfig
