@@ -31,13 +31,18 @@ export default function MainForm() {
     let [showVictory, setShowVictory] = useState(false);
     let [showRules, setShowRules] = useState((localStorage.getItem("rules") ?? "0") !== "1");
     let [lastInput, setLastInput] = useState<LastWordInfo | null>(null);
+    let [lang, setLang] = useState<string>(() => {
+        const userLang = navigator.language?.split('-')[0];
+        if (["en", "fr", "es", "nl"].includes(userLang)) return userLang;
+        return "en";
+    });
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         let timeoutID: number | null = null;
 
         function getApiInfo() {
-            fetch(`${getEndpoint()}/api/info`)
+            fetch(`${getEndpoint()}/api/info/${lang}`)
             .then(x => {
                 return x.json().then((x: GameData) => {
                     if (!x.isReady) { // Backend is not ready yet...
@@ -150,7 +155,7 @@ export default function MainForm() {
                     if (e.key === "Enter")
                     {
                         setCanType(false)
-                        fetch(`${getEndpoint()}/api/validate/${input}`)
+                        fetch(`${getEndpoint()}/api/validate/${lang}/${input}`)
                         .then(x => {
                             if (x.ok) return x.json();
                             throw new Error();
