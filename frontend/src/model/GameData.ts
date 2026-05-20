@@ -3,6 +3,7 @@ export interface GameData
 {
     isReady: boolean // Is game loaded or still loading in the backend
     progression?: number // Is game is not loading, percentage of initialization
+    language: string, // Which language the backend confirmed will be used
     iteration: number // Which "day" we are on the game
     name: GameWordData[] // Game name
     description: GameWordData[] // Game description

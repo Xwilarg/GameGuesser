@@ -77,28 +77,25 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
     [ProducesResponseType<WordInfo>(400)]
     public async Task<IActionResult> GetInfo(string language)
     {
-        var lang = LanguageUtils.StringCountryCodeToLanguage(language);
-        if (lang == null)
-        {
-            return StatusCode(StatusCodes.Status400BadRequest, "The language provided is invalid");
-        }
+        var lang = LanguageUtils.StringCountryCodeToLanguage(language) ?? Language.English;
 
         var now = DateTime.UtcNow.ToString("yyyyMMdd");
         using var scope = scopeFactory.CreateScope();
         var configWork = scope.ServiceProvider.GetRequiredService<ConfigWork>();
         var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
 
-        if (!configWork.IsUpToDate(now) || !localConfigWork.IsUpToDate(lang.Value))
+        if (!configWork.IsUpToDate(now) || !localConfigWork.IsUpToDate(lang))
         {
             return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() {
-                Progression = await configManager.UpdateAsync(lang.Value, now),
-                Language = LanguageUtils.LanguageToStringCountryCode((lang == Language.English || localConfigWork.IsAvailable(lang.Value)) ? lang.Value : Language.English) ?? throw new NotImplementedException()
+                Language = LanguageUtils.LanguageToStringCountryCode((lang == Language.English || localConfigWork.IsAvailable(lang)) ? lang : Language.English) ?? throw new NotImplementedException(),
+                Progression = await configManager.UpdateAsync(lang, now)
             });
         }
 
-        var config = localConfigWork.GetLocalConfig(lang.Value);
+        var config = localConfigWork.GetLocalConfig(lang);
         return StatusCode(StatusCodes.Status200OK, new GameInfo()
         {
+            Language = LanguageUtils.LanguageToStringCountryCode((lang == Language.English || localConfigWork.IsAvailable(lang)) ? lang : Language.English) ?? throw new NotImplementedException(),
             Iteration = configWork.GetIteration(),
             Name = config.Name.Select(x => new GameToken()
             {

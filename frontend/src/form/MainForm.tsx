@@ -32,11 +32,15 @@ export default function MainForm() {
     let [showRules, setShowRules] = useState((localStorage.getItem("rules") ?? "0") !== "1");
     let [lastInput, setLastInput] = useState<LastWordInfo | null>(null);
     let [lang, setLang] = useState<string>(() => {
-        const userLang = navigator.language?.split('-')[0];
-        if (["en", "fr", "es", "nl"].includes(userLang)) return userLang;
-        return "en";
+        return localStorage.getItem("lang") ?? navigator.language?.split('-')[0];
     });
     const inputRef = useRef<HTMLInputElement>(null);
+
+    function saveGameState(x: GameData) {
+        localStorage.setItem(`${x.language}-name`, JSON.stringify(x.name));
+        localStorage.setItem(`${x.language}-shortdesc`, JSON.stringify(x.shortDescription));
+        localStorage.setItem(`${x.language}-desc`, JSON.stringify(x.description));
+    }
 
     useEffect(() => {
         let timeoutID: number | null = null;
@@ -45,6 +49,11 @@ export default function MainForm() {
             fetch(`${getEndpoint()}/api/info/${lang}`)
             .then(x => {
                 return x.json().then((x: GameData) => {
+                    if (lang !== x.language) {
+                        localStorage.setItem("lang", x.language);
+                        setLang(x.language);
+                    }
+
                     if (!x.isReady) { // Backend is not ready yet...
                         setMsg(`First connection of the day, data are being initialized, please wait... ${x.progression}%`);
                         timeoutID = setTimeout(getApiInfo, 1_000);
@@ -69,9 +78,17 @@ export default function MainForm() {
                     if (parseInt(localStorage.getItem("iteration") ?? "0") === x.iteration) {
                         try
                         {
-                            const state: GameData = JSON.parse(localStorage.getItem("state")!);
-                            setData(state);
-                            if (didWin(state.name)) {
+                            const name: GameWordData[] = JSON.parse(localStorage.getItem(`${x.language}-name`)!);
+                            setData({
+                                isReady: true,
+                                progression: x.progression,
+                                language: x.language,
+                                iteration: x.iteration,
+                                name: name,
+                                shortDescription: JSON.parse(localStorage.getItem(`${x.language}-shortdesc`)!),
+                                description: JSON.parse(localStorage.getItem(`${x.language}-desc`)!)
+                            });
+                            if (didWin(name)) {
                                 setHaveWon(true);
                                 setShowVictory(true);
                             }
@@ -80,12 +97,12 @@ export default function MainForm() {
                         {
                             console.warn("Failed to deserialize game state from local storation, resetting data");
                             localStorage.setItem("iteration", x.iteration.toString());
-                            localStorage.setItem("state", JSON.stringify(x));
+                            saveGameState(x);
                             setData(x);
                         }
                     } else {
                         localStorage.setItem("iteration", x.iteration.toString());
-                        localStorage.setItem("state", JSON.stringify(x));
+                        saveGameState(x);
                         
                         setData(x);
                     }
@@ -175,12 +192,13 @@ export default function MainForm() {
                                 let newData = {
                                     isReady: true,
                                     progression: undefined,
+                                    language: lang,
                                     iteration: d!.iteration,
                                     name: nameTokens,
                                     description: descriptionTokens,
                                     shortDescription: shortDescriptionTokens
                                 };
-                                localStorage.setItem("state", JSON.stringify(newData));
+                                saveGameState(newData);
                                 if (!haveWon && didWin(newData.name)) {
                                     setHaveWon(true);
                                     setShowVictory(true);
