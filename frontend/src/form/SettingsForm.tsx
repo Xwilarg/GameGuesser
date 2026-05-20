@@ -12,6 +12,7 @@ export default function SettingsForm({ close, language, setLanguage }: SettingsF
         <div className='modal is-flex flex-center-hor flex-center-ver'>
             <div>
                 <h2>Language</h2>
+                <small>Language availability will depend of the daily game found</small>
                 <select onChange={(e) => setLanguage(e.target.value)}>
                     <option value="en" selected={language === "en"}>English</option>
                 </select>
