@@ -16,7 +16,7 @@ namespace GameGuesser.Backend.Services;
 /// <summary>
 /// Store all connections
 /// </summary>
-public class ConfigManager(JsonSerializerOptions options, IHttpHandler client)
+public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, IServiceScopeFactory scopeFactory)
 {
     public ConcurrentDictionary<Language, int> _progression = new();
     private int GetProgression(Language language)
@@ -145,8 +145,12 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client)
     }
 
     /// <returns>Progress of the update</returns>
-    public async Task<int> UpdateAsync(Language language, string now, ConfigWork configWork, LocalConfigWork localConfigWork)
+    public async Task<int> UpdateAsync(Language language, string now)
     {
+        using var scope = scopeFactory.CreateScope();
+        var configWork = scope.ServiceProvider.GetRequiredService<ConfigWork>();
+        var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
+
         if (localConfigWork.IsUpdating(language))
             return GetProgression(language);
 
@@ -192,6 +196,10 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client)
         {
             try
             {
+                using var scope = scopeFactory.CreateScope();
+                var configWork = scope.ServiceProvider.GetRequiredService<ConfigWork>();
+                var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
+
                 var steamDataRaw = localConfigWork.GetSteamAnswer(language);
                 if (steamDataRaw == null) throw new InvalidOperationException("Daily is not available in this language");
                 var steamData = ParseSteamApiAnswer(steamDataRaw, steamJsonOpt).Data;
@@ -217,6 +225,11 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client)
                     ShortDescription = tokensShortDesc
                 };
                 localConfigWork.SetGameConfig(language, gameConfig);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
             }
             finally
             {

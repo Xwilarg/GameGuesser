@@ -90,7 +90,7 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
 
         if (!configWork.IsUpToDate(now) || !localConfigWork.IsUpToDate(lang.Value))
         {
-            return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = await configManager.UpdateAsync(lang.Value, now, configWork, localConfigWork) });
+            return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = await configManager.UpdateAsync(lang.Value, now) });
         }
 
         var config = localConfigWork.GetLocalConfig(lang.Value);
