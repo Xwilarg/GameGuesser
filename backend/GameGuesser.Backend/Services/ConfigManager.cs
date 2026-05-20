@@ -116,7 +116,10 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
             {
                 if (!adjacents.ContainsKey(token.Word.ToLowerInvariant()))
                 {
-                    adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<SimilarInfo[]>(await client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}"), options)!.Select(x => x.Word).ToArray());
+                    adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<SimilarInfo[]>(
+                        await client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}"), options)!
+                        .Select(x => x.Word).ToArray()
+                    );
                 }
 
                 token.SimilarWords = adjacents[token.Word.ToLowerInvariant()];

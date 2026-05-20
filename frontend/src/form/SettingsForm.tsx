@@ -14,12 +14,14 @@ export default function SettingsForm({ close, language, setLanguage }: SettingsF
                 <h2>Language</h2>
                 <select onChange={(e) => setLanguage(e.target.value)}>
                     <option value="en" selected={language === "en"}>English</option>
-                    <option value="fr" selected={language === "fr"}>Français</option>
-                    <option value="es" selected={language === "es"}>Español</option>
-                    <option value="nl" selected={language === "nl"}>Nederlands</option>
                 </select>
             </div>
             <button onClick={close}>Close</button>
         </div>
     )
+    /* TODO: Add those once backend handle adjacent words for them
+        <option value="fr" selected={language === "fr"}>Français</option>
+        <option value="es" selected={language === "es"}>Español</option>
+        <option value="nl" selected={language === "nl"}>Nederlands</option>
+    */
 }
