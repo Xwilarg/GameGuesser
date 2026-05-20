@@ -26,7 +26,7 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
     }
     private void SetProgression(Language language, int value)
     {
-        _progression.AddOrUpdate(language, value, (lang, value) => value);
+        _progression.AddOrUpdate(language, value, (lang, oldVal) => value);
     }
 
     public int[] Games = // Placeholder list, until I have a batter system to enter games

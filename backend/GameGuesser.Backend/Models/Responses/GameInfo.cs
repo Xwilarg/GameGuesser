@@ -3,6 +3,7 @@
     public class LoadingGameInfo
     {
         public bool IsReady => false;
+        public required string Language { set; get; }
         public required int Progression { set; get; }
     }
 

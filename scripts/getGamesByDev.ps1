@@ -6,7 +6,7 @@ $name = $name.Replace(" ", "+")
 $info = Invoke-RestMethod -Uri "https://store.steampowered.com/search/results/?publisher=${name}&json=1"
 
 if ($info.items.length -eq 0) {
-    Write-Error "No developer found with the corresponding name"
+    Write-Error "No publisher found with the corresponding name"
 }
 
 foreach ($game in $info.items)

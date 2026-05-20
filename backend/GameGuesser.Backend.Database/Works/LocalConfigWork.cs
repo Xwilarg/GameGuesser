@@ -69,6 +69,11 @@ public class LocalConfigWork(SqliteContext ctx, JsonSerializerOptions opt)
         return GetConfig(language).IsUpdating;
     }
 
+    public bool IsAvailable(Language language)
+    {
+        return GetConfig(language).SteamApi != null;
+    }
+
     public bool ToggleUpdateFlag(Language language, bool value)
     {
         var rows = ctx.LocalGames

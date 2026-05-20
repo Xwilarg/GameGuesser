@@ -90,7 +90,10 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
 
         if (!configWork.IsUpToDate(now) || !localConfigWork.IsUpToDate(lang.Value))
         {
-            return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = await configManager.UpdateAsync(lang.Value, now) });
+            return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() {
+                Progression = await configManager.UpdateAsync(lang.Value, now),
+                Language = LanguageUtils.LanguageToStringCountryCode((lang == Language.English || localConfigWork.IsAvailable(lang.Value)) ? lang.Value : Language.English) ?? throw new NotImplementedException()
+            });
         }
 
         var config = localConfigWork.GetLocalConfig(lang.Value);
