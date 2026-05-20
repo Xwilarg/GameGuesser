@@ -1,8 +1,7 @@
 ﻿using GameGuesser.Backend.Backend.Models;
-using GameGuesser.Backend.Database.Context;
+using GameGuesser.Backend.Database.Interfaces;
 using GameGuesser.Backend.Database.Models;
 using GameGuesser.Backend.Database.Works;
-using GameGuesser.Backend.Interfaces;
 using GameGuesser.Backend.Models.Api;
 using GameGuesser.Backend.Models.Responses;
 using Humanizer;
@@ -17,7 +16,7 @@ namespace GameGuesser.Backend.Services;
 /// <summary>
 /// Store all connections
 /// </summary>
-public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, ConfigWork configWork, LocalConfigWork localConfigWork)
+public class ConfigManager(JsonSerializerOptions options, IHttpHandler client)
 {
     public ConcurrentDictionary<Language, int> _progression = new();
     private int GetProgression(Language language)
@@ -146,7 +145,7 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, C
     }
 
     /// <returns>Progress of the update</returns>
-    public async Task<int> UpdateAsync(Language language, string now)
+    public async Task<int> UpdateAsync(Language language, string now, ConfigWork configWork, LocalConfigWork localConfigWork)
     {
         if (localConfigWork.IsUpdating(language))
             return GetProgression(language);

@@ -1,7 +1,7 @@
 using GameGuesser.Backend.Database.Context;
+using GameGuesser.Backend.Database.Interfaces;
 using GameGuesser.Backend.Database.Queries;
 using GameGuesser.Backend.Database.Works;
-using GameGuesser.Backend.Interfaces;
 using GameGuesser.Backend.Services;
 using System.Text.Json;
 
@@ -34,7 +34,7 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 using var scope = app.Services.CreateScope();
-await scope.ServiceProvider.GetRequiredService<InitWork>().InitAsync();
+await scope.ServiceProvider.GetRequiredService<InitWork>().InitAsync(scope.ServiceProvider.GetRequiredService<IHttpHandler>());
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

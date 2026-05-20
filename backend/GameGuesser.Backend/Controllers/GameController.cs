@@ -11,7 +11,7 @@ namespace Katsis.Intranet.Controllers;
 
 [ApiController]
 [Route("/api/")]
-public class GameController(ILogger<GameController> logger, ConfigManager configManager, ConfigWork configWork, LocalConfigWork localConfigWork) : ControllerBase
+public class GameController(ILogger<GameController> logger, ConfigManager configManager, IServiceScopeFactory scopeFactory) : ControllerBase
 {
     private WordBlockInfo GetFoundWords(Token[] tokens, string word)
     {
@@ -27,12 +27,12 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
                     Index = i
                 });
             }
-            if (tokens[i].SimilarWords.Any(x => string.Compare(x, word, true) == 0))
+            if (tokens[i].SimilarWords!.Any(x => string.Compare(x, word, true) == 0))
             {
                 closeIndexes.Add(new()
                 {
                     Index = i,
-                    Score = 1f - Array.FindIndex(tokens[i].SimilarWords, x => string.Compare(x, word, true) == 0) / (float)(tokens[i].SimilarWords.Length - 1)
+                    Score = 1f - Array.FindIndex(tokens[i].SimilarWords!, x => string.Compare(x, word, true) == 0) / (float)(tokens[i].SimilarWords!.Length - 1)
                 });
             }
         }
@@ -52,15 +52,16 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
             return StatusCode(StatusCodes.Status400BadRequest, "Word query parameter is missing");
         }
 
-        var lang = StringToLanguage(language);
+        var lang = LanguageUtils.StringCountryCodeToLanguage(language);
         if (lang == null)
         {
             return StatusCode(StatusCodes.Status400BadRequest, "The language provided is invalid");
         }
 
+        using var scope = scopeFactory.CreateScope();
         word = word.Trim().ToLowerInvariant();
 
-        var config = localConfigWork.GetLocalConfig(lang.Value);
+        var config = scope.ServiceProvider.GetRequiredService<LocalConfigWork>().GetLocalConfig(lang.Value);
         
         return StatusCode(StatusCodes.Status200OK, new WordInfo()
         {
@@ -76,17 +77,20 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
     [ProducesResponseType<WordInfo>(400)]
     public async Task<IActionResult> GetInfo(string language)
     {
-        var lang = StringToLanguage(language);
+        var lang = LanguageUtils.StringCountryCodeToLanguage(language);
         if (lang == null)
         {
             return StatusCode(StatusCodes.Status400BadRequest, "The language provided is invalid");
         }
 
         var now = DateTime.UtcNow.ToString("yyyyMMdd");
+        using var scope = scopeFactory.CreateScope();
+        var configWork = scope.ServiceProvider.GetRequiredService<ConfigWork>();
+        var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
 
         if (!configWork.IsUpToDate(now) || !localConfigWork.IsUpToDate(lang.Value))
         {
-            return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = configManager.Update(lang.Value, now) });
+            return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = await configManager.UpdateAsync(lang.Value, now, configWork, localConfigWork) });
         }
 
         var config = localConfigWork.GetLocalConfig(lang.Value);

@@ -1,10 +1,11 @@
 ﻿using GameGuesser.Backend.Database.Context;
+using GameGuesser.Backend.Database.Interfaces;
 
 namespace GameGuesser.Backend.Database.Queries;
 
-public class InitWork(SqliteContext ctx, HttpClient client)
+public class InitWork(SqliteContext ctx)
 {
-    public async Task InitAsync()
+    public async Task InitAsync(IHttpHandler client)
     {
         ctx.Game.First().IsUpdating = false;
         foreach (var local in ctx.LocalGames)
