@@ -2,11 +2,10 @@
 
 namespace GameGuesser.Backend.Database.Queries;
 
-public static class InitWork
+public class InitWork(SqliteContext ctx, HttpClient client)
 {
-    public static async Task InitAsync(SqliteContext ctx, HttpClient client)
+    public async Task InitAsync()
     {
-        using var transaction = ctx.Database.BeginTransaction();
         ctx.Game.First().IsUpdating = false;
         foreach (var local in ctx.LocalGames)
         {
@@ -21,7 +20,6 @@ public static class InitWork
                 Verbs = verbs
             });
         }
-
-        transaction.Commit();
+        ctx.SaveChanges();
     }
 }

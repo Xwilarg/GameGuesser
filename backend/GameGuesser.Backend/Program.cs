@@ -1,5 +1,6 @@
 using GameGuesser.Backend.Database.Context;
 using GameGuesser.Backend.Database.Queries;
+using GameGuesser.Backend.Database.Works;
 using GameGuesser.Backend.Interfaces;
 using GameGuesser.Backend.Services;
 using System.Text.Json;
@@ -12,9 +13,14 @@ builder.Services.AddSingleton(new JsonSerializerOptions()
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase
 });
 builder.Services.AddSingleton<ConfigManager>();
-builder.Services.AddSingleton<Random>();
 builder.Services.AddSingleton<IHttpHandler, GameGuesser.Backend.Services.HttpClientHandler>();
 builder.Services.AddDbContext<SqliteContext>();
+
+// Works
+builder.Services
+    .AddScoped<InitWork>()
+    .AddScoped<ConfigWork>()
+    .AddScoped<LocalConfigWork>();
 
 builder.Services.AddCors(options =>
 {
@@ -28,7 +34,7 @@ builder.Services.AddControllers();
 var app = builder.Build();
 
 using var scope = app.Services.CreateScope();
-await InitWork.InitAsync(scope.ServiceProvider.GetRequiredService<SqliteContext>(), scope.ServiceProvider.GetRequiredService<HttpClient>());
+await scope.ServiceProvider.GetRequiredService<InitWork>().InitAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -11,7 +11,7 @@ namespace Katsis.Intranet.Controllers;
 
 [ApiController]
 [Route("/api/")]
-public class GameController(ILogger<GameController> logger, ConfigManager configManager, SqliteContext ctx, JsonSerializerOptions jsonOpt) : ControllerBase
+public class GameController(ILogger<GameController> logger, ConfigManager configManager, ConfigWork configWork, LocalConfigWork localConfigWork) : ControllerBase
 {
     private WordBlockInfo GetFoundWords(Token[] tokens, string word)
     {
@@ -43,15 +43,6 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
         };
     }
 
-    private Language? StringToLanguage(string str)
-    {
-        return str switch
-        {
-            "en" => Language.English,
-            _ => null
-        };
-    }
-
     [HttpGet("validate/{language}/{word}")]
     [ProducesResponseType<WordInfo>(400)]
     public async Task<IActionResult> ValidateWord(string language, string word)
@@ -69,7 +60,7 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
 
         word = word.Trim().ToLowerInvariant();
 
-        var config = LocalConfigWork.GetLocalConfig(ctx, jsonOpt, lang.Value);
+        var config = localConfigWork.GetLocalConfig(lang.Value);
         
         return StatusCode(StatusCodes.Status200OK, new WordInfo()
         {
@@ -93,19 +84,15 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
 
         var now = DateTime.UtcNow.ToString("yyyyMMdd");
 
-        if (!ConfigWork.IsUpToDate(ctx, now))
+        if (!configWork.IsUpToDate(now) || !localConfigWork.IsUpToDate(lang.Value))
         {
-            if (LocalConfigWork.IsUpdating(ctx, lang.Value))
-                return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = configManager.GetProgression(lang.Value) });
-
-            configManager.Update();
-            return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = 0 });
+            return StatusCode(StatusCodes.Status200OK, new LoadingGameInfo() { Progression = configManager.Update(lang.Value, now) });
         }
 
-        var config = LocalConfigWork.GetLocalConfig(ctx, jsonOpt, lang.Value);
+        var config = localConfigWork.GetLocalConfig(lang.Value);
         return StatusCode(StatusCodes.Status200OK, new GameInfo()
         {
-            Iteration = ConfigWork.GetIteration(ctx),
+            Iteration = configWork.GetIteration(),
             Name = config.Name.Select(x => new GameToken()
             {
                 DisplayedWord = x.NeedToBeGuessed ? null : x.Word,

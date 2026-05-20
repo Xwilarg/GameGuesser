@@ -7,6 +7,7 @@ internal class LocalGameContext
 {
     [Key] public required Language Language { set; get; }
 
+    public string? SteamApi { set; get; } = null;
     public string? Game { set; get; } = null;
     public string? Verbs { set; get; } = null;
 
