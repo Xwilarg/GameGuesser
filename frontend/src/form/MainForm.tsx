@@ -6,6 +6,8 @@ import RulesForm from "./RulesForm"
 import type { LastWordInfo } from "../model/LastWordInfo"
 import type { GameData, GameWordData } from "../model/GameData"
 import type { WordBlockData, WordData } from "../model/WordData"
+import AboutForm from "./AboutForm"
+import SettingsForm from "./SettingsForm"
 
 function getEndpoint(): string
 {
@@ -28,20 +30,39 @@ export default function MainForm() {
     let [input, setInput] = useState("");
     let [canType, setCanType] = useState(true);
     let [haveWon, setHaveWon] = useState(false);
-    let [showVictory, setShowVictory] = useState(false);
-    let [showRules, setShowRules] = useState((localStorage.getItem("rules") ?? "0") !== "1");
     let [lastInput, setLastInput] = useState<LastWordInfo | null>(null);
+    let [lang, setLang] = useState<string>(() => {
+        return localStorage.getItem("lang") ?? navigator.language?.split('-')[0];
+    });
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // Modals
+    let [showVictory, setShowVictory] = useState(false);
+    let [showAbout, setShowAbout] = useState(false);
+    let [showSettings, setShowSettings] = useState(false);
+    let [showRules, setShowRules] = useState((localStorage.getItem("rules") ?? "0") !== "1");
+
+    function saveGameState(x: GameData) {
+        localStorage.setItem(`${x.language}-name`, JSON.stringify(x.name));
+        localStorage.setItem(`${x.language}-shortdesc`, JSON.stringify(x.shortDescription));
+        localStorage.setItem(`${x.language}-desc`, JSON.stringify(x.description));
+    }
 
     useEffect(() => {
         let timeoutID: number | null = null;
 
         function getApiInfo() {
-            fetch(`${getEndpoint()}/api/info`)
+            fetch(`${getEndpoint()}/api/info/${lang}`)
             .then(x => {
                 return x.json().then((x: GameData) => {
+                    if (lang !== x.language) { // Language we got wasn't the one we expected
+                        setLang(x.language);
+                        return
+                    }
+
                     if (!x.isReady) { // Backend is not ready yet...
                         setMsg(`First connection of the day, data are being initialized, please wait... ${x.progression}%`);
+                        if (timeoutID !== null) clearTimeout(timeoutID);
                         timeoutID = setTimeout(getApiInfo, 1_000);
                         return;
                     }
@@ -64,9 +85,17 @@ export default function MainForm() {
                     if (parseInt(localStorage.getItem("iteration") ?? "0") === x.iteration) {
                         try
                         {
-                            const state: GameData = JSON.parse(localStorage.getItem("state")!);
-                            setData(state);
-                            if (didWin(state.name)) {
+                            const name: GameWordData[] = JSON.parse(localStorage.getItem(`${x.language}-name`)!);
+                            setData({
+                                isReady: true,
+                                progression: x.progression,
+                                language: x.language,
+                                iteration: x.iteration,
+                                name: name,
+                                shortDescription: JSON.parse(localStorage.getItem(`${x.language}-shortdesc`)!),
+                                description: JSON.parse(localStorage.getItem(`${x.language}-desc`)!)
+                            });
+                            if (didWin(name)) {
                                 setHaveWon(true);
                                 setShowVictory(true);
                             }
@@ -75,12 +104,12 @@ export default function MainForm() {
                         {
                             console.warn("Failed to deserialize game state from local storation, resetting data");
                             localStorage.setItem("iteration", x.iteration.toString());
-                            localStorage.setItem("state", JSON.stringify(x));
+                            saveGameState(x);
                             setData(x);
                         }
                     } else {
                         localStorage.setItem("iteration", x.iteration.toString());
-                        localStorage.setItem("state", JSON.stringify(x));
+                        saveGameState(x);
                         
                         setData(x);
                     }
@@ -91,12 +120,13 @@ export default function MainForm() {
                 });
             });
         }
+
         getApiInfo();
 
         return () => {
             if (timeoutID !== null) clearTimeout(timeoutID);
         }
-    }, []);
+    }, [ lang ]);
 
     useEffect(() => {
         if (canType) inputRef?.current?.focus();
@@ -133,24 +163,29 @@ export default function MainForm() {
         )
     }
 
+    function closeModals() {
+        setShowAbout(false);
+        setShowRules(false);
+        setShowVictory(false);
+        setShowSettings(false);
+    }
+
     return (
         <>
-            {
-                showRules
-                ? <RulesForm close={() => { setShowRules(false); localStorage.setItem("rules", "1"); }} />
-                : <></>
-            }
-            {
-                showVictory
-                ? <WinningForm close={() => { setShowVictory(false) }} state={data!} />
-                : <></>
-            }
+            { showAbout ? <AboutForm close={() => { setShowAbout(false); }} /> : <></> }
+            { showRules ? <RulesForm close={() => { setShowRules(false); localStorage.setItem("rules", "1"); }} /> : <></> }
+            { showVictory ? <WinningForm close={() => { setShowVictory(false) }} state={data!} /> : <></> }
+            { showSettings ? <SettingsForm close={() => { setShowSettings(false) }} language={lang} setLanguage={(newLang: string) => {
+                localStorage.setItem("lang", newLang); // Store user prefered language
+                setLang(newLang);
+                }}/> : <></> }
+
             <div className="container box is-flex flex-center-ver" id="input-area">
                 <input ref={inputRef} disabled={!canType} value={input} onChange={x => setInput((x.target as HTMLInputElement).value)} type="text" onKeyDown={e => {
                     if (e.key === "Enter")
                     {
                         setCanType(false)
-                        fetch(`${getEndpoint()}/api/validate/${input}`)
+                        fetch(`${getEndpoint()}/api/validate/${lang}/${input}`)
                         .then(x => {
                             if (x.ok) return x.json();
                             throw new Error();
@@ -170,12 +205,13 @@ export default function MainForm() {
                                 let newData = {
                                     isReady: true,
                                     progression: undefined,
+                                    language: lang,
                                     iteration: d!.iteration,
                                     name: nameTokens,
                                     description: descriptionTokens,
                                     shortDescription: shortDescriptionTokens
                                 };
-                                localStorage.setItem("state", JSON.stringify(newData));
+                                saveGameState(newData);
                                 if (!haveWon && didWin(newData.name)) {
                                     setHaveWon(true);
                                     setShowVictory(true);
@@ -204,11 +240,12 @@ export default function MainForm() {
             <GuessAreaForm data={data!.shortDescription} id="guess-sdesc" lastInput={lastInput?.data?.shortDescription ?? null} />
             <GuessAreaForm data={data!.description} id="guess-desc" lastInput={lastInput?.data?.description ?? null} />
             <div className="container box is-flex">
-                <Link to="/privacy">Privacy & Contact</Link>
-                <a onClick={() => setShowRules(true) }>Show rules</a>
+                <a onClick={() => { closeModals(); setShowAbout(true); } }>Privacy & Contact</a>
+                <a onClick={() => { closeModals(); setShowRules(true); } }>Show rules</a>
+                <a onClick={() => { closeModals(); setShowSettings(true); } }>Settings</a>
                 {
                     haveWon
-                    ? <a onClick={() => setShowVictory(true) }>Show victory popup</a>
+                    ? <a onClick={() => { closeModals(); setShowVictory(true); }}>Show victory popup</a>
                     : <></>
                 }
             </div>

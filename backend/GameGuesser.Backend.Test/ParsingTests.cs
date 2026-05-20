@@ -1,7 +1,8 @@
 ﻿using FluentAssertions;
-using GameGuesser.Backend.Interfaces;
-using GameGuesser.Backend.Models;
+using GameGuesser.Backend.Backend.Models;
+using GameGuesser.Backend.Database.Interfaces;
 using GameGuesser.Backend.Services;
+using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
 
 namespace GameGuesser.Backend.Test
@@ -10,11 +11,6 @@ namespace GameGuesser.Backend.Test
     {
         public async Task<string> GetStringAsync(string url)
         {
-            if (url == "https://raw.githubusercontent.com/monolithpl/verb.forms.dictionary/refs/heads/master/json/verbs-dictionaries.json")
-            {
-                using var client = new HttpClient();
-                return await client.GetStringAsync(url);
-            }
             return """
                               [{
                   "word": "test",
@@ -28,16 +24,25 @@ namespace GameGuesser.Backend.Test
     public class ParsingTests
     {
         private ConfigManager _config;
+        private string[][] _verbs;
 
         [SetUp]
         public async Task Setup()
         {
             Environment.SetEnvironmentVariable("TEST", "1");
+            var serviceCollection = new ServiceCollection();
+            var serviceProvider = serviceCollection.BuildServiceProvider();
             _config = new(new JsonSerializerOptions()
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }, new WordHttpClient(), new Random());
-            await _config.InitAsync();
+            }, new WordHttpClient(), serviceProvider.GetRequiredService<IServiceScopeFactory>());
+
+            using var client = new HttpClient();
+            _verbs = JsonSerializer.Deserialize<string[][]>(await client.GetStringAsync("https://raw.githubusercontent.com/monolithpl/verb.forms.dictionary/refs/heads/master/json/verbs-dictionaries.json"),
+                new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                })!;
         }
 
         [TestCase(
@@ -64,7 +69,7 @@ namespace GameGuesser.Backend.Test
         [Test]
         public async Task TestTokenParsing()
         {
-            var tokens = await _config.StringToTokensAsync("a great journey to drink water, with you");
+            var tokens = await _config.StringToTokensAsync("a great journey to drink water, with you", _verbs);
             tokens.Should().BeEquivalentTo([
                 new Token()
                 {

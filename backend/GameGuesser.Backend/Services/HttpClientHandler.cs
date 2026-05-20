@@ -1,4 +1,4 @@
-﻿using GameGuesser.Backend.Interfaces;
+﻿using GameGuesser.Backend.Database.Interfaces;
 
 namespace GameGuesser.Backend.Services;
 
