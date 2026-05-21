@@ -19,3 +19,11 @@ To test the game locally, simply clone the repository, start the backend and do 
 https://game.jinkou.org/
 
 ![Preview](/readme/preview.png)
+
+## Credits
+
+Game data taken from Steam
+
+### English
+- https://github.com/monolithpl/verb.forms.dictionary
+- https://www.datamuse.com/api/
