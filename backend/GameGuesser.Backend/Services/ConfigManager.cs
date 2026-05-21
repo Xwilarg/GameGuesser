@@ -219,7 +219,7 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
                 // Parse description into tokens
                 var tokensName = await StringToTokensAsync(steamData.Name, verbs);
                 var tokensDesc = await StringToTokensAsync(desc, verbs, (value) => { SetProgression(language, value); });
-                var tokensShortDesc = await StringToTokensAsync(steamData.ShortDescription, verbs);
+                var tokensShortDesc = await StringToTokensAsync(WebUtility.HtmlDecode(steamData.ShortDescription), verbs);
 
                 var gameConfig = new GameConfig()
                 {
