@@ -89,6 +89,20 @@ button, .button {
 }
 
 /* Word display area */
+.word {
+    position: relative;
+}
+.hint-length {
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    right: 0;
+    background-color: var(--primary-background);
+    font-size: 10px;
+    padding: 3px;
+    border-top-left-radius: var(--border-radius);
+}
+
 .hidden-word {
     background-color: black;
     height: 30px;
@@ -108,14 +122,12 @@ button, .button {
 #guess-sdesc {
     height: 135px;
     overflow-y: scroll;
-    scrollbar-width: thin;
     scrollbar-color: var(--primary-light) transparent;
     align-items: baseline;
 }
 #guess-desc {
     height: calc(100vh - 390px);
     overflow-y: scroll;
-    scrollbar-width: thin;
     scrollbar-color: var(--primary-light) transparent;
     align-items: baseline;
 }
@@ -202,7 +214,7 @@ input[type=text] {
     background-color: var(--primary-background);
     border: var(--border);
     border-radius: var(--border-radius);
-    z-index: 1;
+    z-index: 2;
 }
 .modal h1 {
     text-align: center;

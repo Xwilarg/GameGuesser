@@ -18,7 +18,7 @@ export default function RulesForm({ close }: RulesFormProps) {
                 <br/>
                 If the word appear <span style={{ color: `rgb(255, 166, 0)` }}>orange</span>, eeh, you are close but that's not totally it. Watch the <span style={{ color: `rgba(255, 166, 0, 0.6)` }}>transparency</span> of the word tho, the more opaque, the closer it is to the word you're looking for!<br/>
                 <br/>
-                A last little tip before you go, hover a word you haven't found to see the amount of characters it contains<br/>
+                A last little tip before you go, click on a word you haven't found to see the amount of characters it contains<br/>
                 <br/>
                 Good luck!
             </p>
