@@ -1,11 +1,9 @@
 ﻿using GameGuesser.Backend.Backend.Models;
-using GameGuesser.Backend.Database.Context;
 using GameGuesser.Backend.Database.Models;
 using GameGuesser.Backend.Database.Works;
 using GameGuesser.Backend.Models.Responses;
 using GameGuesser.Backend.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace Katsis.Intranet.Controllers;
 
