@@ -1,4 +1,4 @@
-﻿namespace GameGuesser.Backend.Interfaces;
+﻿namespace GameGuesser.Backend.Database.Interfaces;
 
 public interface IHttpHandler
 {

@@ -1,12 +1,5 @@
-﻿namespace GameGuesser.Backend.Models
+﻿namespace GameGuesser.Backend.Backend.Models
 {
-    public class Config
-    {
-        public required string? LastUpdate { set; get; }
-        public required int Iteration { set; get; }
-        public required GameConfig Game { set; get; }
-    }
-
     public class GameConfig
     {
         public required Token[] Name { set; get; }
