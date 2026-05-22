@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react"
 import GuessAreaForm from "./GuessAreaForm"
-import { Link } from "react-router"
 import WinningForm from "./WinningForm"
 import RulesForm from "./RulesForm"
 import type { LastWordInfo } from "../model/LastWordInfo"
@@ -67,7 +66,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                     }
 
                     if (!x.isReady) { // Backend is not ready yet...
-                        setMsg(`First connection of the day, data are being initialized, please wait... ${x.progression}%`);
+                        setMsg(translate("main.initialize", { progression: x.progression!.toString() }));
                         if (timeoutID !== null) clearTimeout(timeoutID);
                         timeoutID = setTimeout(getApiInfo, 1_000);
                         return;
@@ -122,7 +121,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
 
                     setMsg(null)
                 }).catch(err => {
-                    setMsg(`An error occured while initializing game data: ${err}`)
+                    setMsg(translate("error.generic", { error: err }))
                 });
             });
         }
@@ -165,9 +164,9 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                     { msg }
                 </div>
                 <div className="container box is-flex">
-                    <a onClick={() => { closeModals(); setShowAbout(true); } }>{translate("footer.privacy_and_contact")}</a>
-                    <a onClick={() => { closeModals(); setShowRules(true); } }>Show rules</a>
-                    <a onClick={() => { closeModals(); setShowSettings(true); } }>Settings</a>
+                <a onClick={() => { closeModals(); setShowAbout(true); } }>{ translate("footer.privacy_and_contact") }</a>
+                <a onClick={() => { closeModals(); setShowRules(true); } }>{ translate("footer.rules") }</a>
+                <a onClick={() => { closeModals(); setShowSettings(true); } }>{ translate("footer.settings") }</a>
                 </div>
             </>
         )
@@ -251,12 +250,12 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
             <GuessAreaForm data={data!.shortDescription} id="guess-sdesc" lastInput={lastInput?.data?.shortDescription ?? null} />
             <GuessAreaForm data={data!.description} id="guess-desc" lastInput={lastInput?.data?.description ?? null} />
             <div className="container box is-flex">
-                <a onClick={() => { closeModals(); setShowAbout(true); } }>{translate("footer.privacy_and_contact")}</a>
-                <a onClick={() => { closeModals(); setShowRules(true); } }>Show rules</a>
-                <a onClick={() => { closeModals(); setShowSettings(true); } }>Settings</a>
+                <a onClick={() => { closeModals(); setShowAbout(true); } }>{ translate("footer.privacy_and_contact") }</a>
+                <a onClick={() => { closeModals(); setShowRules(true); } }>{ translate("footer.rules") }</a>
+                <a onClick={() => { closeModals(); setShowSettings(true); } }>{ translate("footer.settings") }</a>
                 {
                     haveWon
-                    ? <a onClick={() => { closeModals(); setShowVictory(true); }}>Show victory popup</a>
+                    ? <a onClick={() => { closeModals(); setShowVictory(true); }}>{ translate("footer.victory") }</a>
                     : <></>
                 }
             </div>

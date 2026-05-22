@@ -27,7 +27,6 @@ function App() {
         "en": translationsEn
     }
 
-    console.log(lang)
     return (
         <LocalizationProvider locale={lang} translations={translations}>
             <BrowserRouter>

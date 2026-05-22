@@ -1,3 +1,4 @@
+import { useLocalize } from "localize-react";
 import type { GameData } from "../model/GameData";
 import { getGameName } from "./MainForm";
 
@@ -31,15 +32,17 @@ export default function WinningForm({ state, close }: WinningFormProps) {
         return <></>
     }
 
+    const { translate } = useLocalize();
+
     return (
         <div className='modal is-flex flex-center-hor flex-center-ver winning-modal'>
-            <h1>You finished the {getGameName()} #{state.iteration}</h1>
+            <h1>{translate("win.title", { gamename: getGameName(), number: state.iteration })}</h1>
             <div className="is-flex">
                 <button onClick={() => {
-                    let shareText = `${getGameName()} #${state.iteration}\nCompletion: ${getCompletion(state).toFixed(1)}%\n${getCompletionEmotes(state)}\n\n${window.location}`;
+                    let shareText = `${getGameName()} #${state.iteration}\n${translate("win.completion", { completion: getCompletion(state).toFixed(1) })}\n${getCompletionEmotes(state)}\n\n${window.location}`;
                     navigator.clipboard.writeText(shareText)
-                    .then(() => window.alert("Text copied to clipboard"))
-                    .catch(() => window.prompt("Copy to share", shareText));
+                    .then(() => window.alert(translate("win.text_copied")))
+                    .catch(() => window.prompt(translate("win.copy_share"), shareText));
                 }}>Share</button>
                 <button onClick={close}>Close</button>
             </div>

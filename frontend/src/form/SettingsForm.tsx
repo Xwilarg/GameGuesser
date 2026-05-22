@@ -1,3 +1,5 @@
+import { useLocalize } from "localize-react"
+
 interface SettingsFormProps
 {
     language: string
@@ -6,14 +8,16 @@ interface SettingsFormProps
 }
 
 export default function SettingsForm({ close, language, setLanguage }: SettingsFormProps) {
+    const { translate } = useLocalize();
+
     return (
         <div className='modal is-flex flex-center-hor flex-center-ver'>
             <div>
-                <h2>Language</h2>
-                <small>Language availability will depend of the daily game found</small><br/>
-                <select onChange={(e) => setLanguage(e.target.value)}>
-                    <option value="en" selected={language === "en"}>English</option>
-                    <option value="es" selected={language === "es"}>Español</option>
+                <h2>{translate("settings.language")}</h2>
+                <small>{translate("settings.language_warn")}</small><br/>
+                <select onChange={(e) => setLanguage(e.target.value)} defaultValue={language}>
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
                 </select>
             </div>
             <button onClick={close}>Close</button>

@@ -1,24 +1,28 @@
+import { useLocalize } from "localize-react"
+
 interface AboutFormProps
 {
     close: () => void
 }
 
 export default function AboutForm({ close }: AboutFormProps) {
+    const { translate } = useLocalize();
+
     return (
         <div className='modal is-flex flex-center-hor flex-center-ver'>
             <div>
-                <h2>About</h2>
-                Game inspired by <a href="https://www.synoptix.fr/" target="_blank">Synoptix</a><br/>
-                Daily reset happens at midnight UTC+0
-                <h2>Privacy</h2>
-                This website is using Shika for its analytics<br/>
-                You can see all the data collected <a href="https://astylodon.org/docs/shika/data" target='_blank'>here</a><br/>
-                Please note that Shika doesn't collect any data that allow to track individual users
-                <h2>Contact & contribute</h2>
-                The website source code is available at on <a href="https://github.com/Xwilarg/GameGuesser" target="_blank">GitHub</a><br/>
-                For any inquiery, please open an issue or a conversation there
+                <h2>{translate("about.about")}</h2>
+                {translate("about.inspired_by")} <a href="https://www.synoptix.fr/" target="_blank">Synoptix</a><br/>
+                {translate("about.daily_reset")}
+                <h2>{translate("about.privacy")}</h2>
+                {translate("about.shika_intro")}<br/>
+                {translate("about.shika_privacy")} <a href="https://astylodon.org/docs/shika/data" target='_blank'>https://astylodon.org/docs/shika/data</a><br/>
+                {translate("about.shika_tracking")}
+                <h2>{translate("about.contact_and_contribute")}</h2>
+                {translate("about.source_code")}<a href="https://github.com/Xwilarg/GameGuesser" target="_blank">GitHub</a><br/>
+                {translate("about.issue")}
             </div>
-            <button onClick={close}>Close</button>
+            <button onClick={close}>{translate("generic.close")}</button>
         </div>
     )
 }

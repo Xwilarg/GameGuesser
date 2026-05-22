@@ -236,10 +236,10 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
 
         if (!configWork.IsUpToDate(now))
         {
-            if (!configWork.ToggleUpdateFlag(true)) return 0;
-
             try
             {
+                if (!configWork.ToggleUpdateFlag(true)) return 0;
+
                 // Init game
                 localConfigWork.ClearAllLocalConfig();
                 var gameId = Games[Random.Shared.Next(0, Games.Length)];
@@ -265,7 +265,6 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
         }
 
         if (localConfigWork.IsUpToDate(language)) return 0; // Local config is already up to date
-        if (!localConfigWork.ToggleUpdateFlag(language, true)) return 0;
 
         _ = Task.Run(async () =>
         {
@@ -274,6 +273,8 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
                 using var scope = scopeFactory.CreateScope();
                 var configWork = scope.ServiceProvider.GetRequiredService<ConfigWork>();
                 var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
+
+                if (!localConfigWork.ToggleUpdateFlag(language, true)) return;
 
                 var steamDataRaw = localConfigWork.GetSteamAnswer(language);
                 if (steamDataRaw == null) throw new InvalidOperationException("Daily is not available in this language");
