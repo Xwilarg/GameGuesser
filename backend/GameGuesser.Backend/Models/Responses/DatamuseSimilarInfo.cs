@@ -12,6 +12,7 @@
 
     public class FreeDictionarySimilarEntryInfo
     {
+        public required string PartOfSpeech { set; get; }
         public required FreeDictionarySimilarEntryFormInfo[] Forms { set; get; }
         public required FreeDictionarySimilarEntrySenseInfo[] Senses { set; get; }
     }
@@ -24,6 +25,6 @@
 
     public class FreeDictionarySimilarEntrySenseInfo
     {
-        public required string[] Synonyms { set; get; }
+        public required string Definition { set; get; }
     }
 }

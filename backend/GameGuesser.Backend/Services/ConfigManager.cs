@@ -68,6 +68,7 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
     /// <param name="onProgress">Callback that return progress when we do HTTP requests (which is the operation taking the most time</param>
     public async Task<Token[]> StringToTokensAsync(Language lang, string text, string[][] verbs, Action<int>? onProgress = null)
     {
+        // We first split the sentence into tokens to find what are words and what are not
         List<Token> tokens = [];
         StringBuilder currWord = new();
         foreach (var l in text)
@@ -107,7 +108,9 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
             });
         }
 
-        if (lang == Language.Spanish) // Spanish have complex grammar so we get it here
+        // In english we just have a premade array of verbs but in spanish we have too many conjugaisons
+        // So instead we check all the verbs we have on our text and look for all existing conjugaisons
+        if (lang == Language.Spanish)
         {
             Dictionary<string, string[]> grammar = [];
             for (int i = 0; i < tokens.Count; i++)
@@ -117,12 +120,47 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
                 {
                     if (!grammar.ContainsKey(token.Word.ToLowerInvariant()))
                     {
-                        grammar.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<FreeDictionarySimilarInfo>(
-                            await client.GetStringAsync($"https://freedictionaryapi.com/api/v1/entries/es/{token.Word.ToLowerInvariant()}"), options)!.Entries
-                            .SelectMany(y => y.Forms
-                                .Where(z => !z.Tags.Contains("table-tags") && !z.Tags.Contains("inflection-template") && !z.Tags.Contains("class") && z.Word != "-")
-                                .Select(z => z.Word)).ToArray()
-                        );
+                        List<string> conjugaisons = new();
+                        var entries = JsonSerializer.Deserialize<FreeDictionarySimilarInfo>(
+                            await client.GetStringAsync($"https://freedictionaryapi.com/api/v1/entries/es/{token.Word.ToLowerInvariant()}")
+                            , options)!.Entries;
+
+                        // All verbs inside the search
+                        var verbParts = entries.Where(x => x.PartOfSpeech == "verb");
+
+                        foreach (var v in verbParts)
+                        {
+                            var infls = v.Senses.Where(x => x.Definition.StartsWith("inflection of "));
+                            if (infls.Any()) // Verb is conjugated so API doesn't return all all conjugaison, we need to look for the infinitive and do another API call to get conjugaisons
+                            {
+                                foreach (var infl in infls)
+                                {
+                                    var verb = Regex.Match(infl.Definition, "inflection of ([^:]+):");
+                                    if (verb.Success)
+                                    {
+                                        var infinitive = verb.Groups[1].Value;
+                                        var conjEntries = JsonSerializer.Deserialize<FreeDictionarySimilarInfo>(
+                                            await client.GetStringAsync($"https://freedictionaryapi.com/api/v1/entries/es/{infinitive}")
+                                            , options)!.Entries;
+                                        conjugaisons.AddRange(
+                                            conjEntries.SelectMany(v =>
+                                            v.Forms
+                                                .Where(z => !z.Tags.Contains("table-tags") && !z.Tags.Contains("inflection-template") && !z.Tags.Contains("class") && z.Word != "-")
+                                                .Select(z => z.Word)).ToArray()
+                                        );
+                                    }
+                                }
+                            }
+                            else // Verb is already at the infinitive
+                            {
+                                conjugaisons.AddRange(
+                                    v.Forms
+                                        .Where(z => !z.Tags.Contains("table-tags") && !z.Tags.Contains("inflection-template") && !z.Tags.Contains("class") && z.Word != "-")
+                                        .Select(z => z.Word).ToArray()
+                                );
+                            }
+                        }
+                        grammar.Add(token.Word.ToLowerInvariant(), conjugaisons.ToArray());
                     }
 
                     token.AcceptedWords = [..token.AcceptedWords!, ..grammar[token.Word.ToLowerInvariant()]];
@@ -140,24 +178,23 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
             {
                 if (!adjacents.ContainsKey(token.Word.ToLowerInvariant()))
                 {
-                    if (lang == Language.English)
+                    string? url = lang switch
+                    {
+                        Language.English => $"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}",
+                        Language.Spanish => $"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}&v=es",
+                        _ => null
+                    };
+                    if (url != null)
                     {
                         adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<DatamuseSimilarInfo[]>(
-                            await client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}"), options)!
-                            .Select(x => x.Word).ToArray()
-                        );
-                    }
-                    else if (lang == Language.Spanish)
-                    {
-                        adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<DatamuseSimilarInfo[]>(
-                            await client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}&v=es"), options)!
+                            await client.GetStringAsync(url), options)!
                             .Select(x => x.Word).ToArray()
                         );
                     }
                 }
 
                 token.SimilarWords = adjacents[token.Word.ToLowerInvariant()];
-                if (lang == Language.Spanish) onProgress?.Invoke(50 + (int)Math.Floor(i / (float)tokens.Count * 50f));
+                if (lang == Language.Spanish) onProgress?.Invoke(50 + (int)Math.Floor(i / (float)tokens.Count * 50f)); // Spanish progression started on the previous step with grammar check
                 else onProgress?.Invoke((int)Math.Floor(i / (float)tokens.Count * 100f));
             }
         }

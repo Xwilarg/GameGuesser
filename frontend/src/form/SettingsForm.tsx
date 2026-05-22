@@ -1,5 +1,3 @@
-import { getGameName } from "./MainForm";
-
 interface SettingsFormProps
 {
     language: string
