@@ -66,8 +66,9 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
     /// </summary>
     /// <param name="text">Text to split</param>
     /// <param name="onProgress">Callback that return progress when we do HTTP requests (which is the operation taking the most time</param>
-    public async Task<Token[]> StringToTokensAsync(string text, string[][] verbs, Action<int>? onProgress = null)
+    public async Task<Token[]> StringToTokensAsync(Language lang, string text, string[][] verbs, Action<int>? onProgress = null)
     {
+        // We first split the sentence into tokens to find what are words and what are not
         List<Token> tokens = [];
         StringBuilder currWord = new();
         foreach (var l in text)
@@ -107,6 +108,67 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
             });
         }
 
+        // In english we just have a premade array of verbs but in spanish we have too many conjugaisons
+        // So instead we check all the verbs we have on our text and look for all existing conjugaisons
+        if (lang == Language.Spanish)
+        {
+            Dictionary<string, string[]> grammar = [];
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                var token = tokens[i];
+                if (token.NeedToBeGuessed)
+                {
+                    if (!grammar.ContainsKey(token.Word.ToLowerInvariant()))
+                    {
+                        List<string> conjugaisons = new();
+                        var entries = JsonSerializer.Deserialize<FreeDictionarySimilarInfo>(
+                            await client.GetStringAsync($"https://freedictionaryapi.com/api/v1/entries/es/{token.Word.ToLowerInvariant()}")
+                            , options)!.Entries;
+
+                        // All verbs inside the search
+                        var verbParts = entries.Where(x => x.PartOfSpeech == "verb");
+
+                        foreach (var v in verbParts)
+                        {
+                            var infls = v.Senses.Where(x => x.Definition.StartsWith("inflection of "));
+                            if (infls.Any()) // Verb is conjugated so API doesn't return all all conjugaison, we need to look for the infinitive and do another API call to get conjugaisons
+                            {
+                                foreach (var infl in infls)
+                                {
+                                    var verb = Regex.Match(infl.Definition, "inflection of ([^:]+):");
+                                    if (verb.Success)
+                                    {
+                                        var infinitive = verb.Groups[1].Value;
+                                        var conjEntries = JsonSerializer.Deserialize<FreeDictionarySimilarInfo>(
+                                            await client.GetStringAsync($"https://freedictionaryapi.com/api/v1/entries/es/{infinitive}")
+                                            , options)!.Entries;
+                                        conjugaisons.AddRange(
+                                            conjEntries.SelectMany(v =>
+                                            v.Forms
+                                                .Where(z => !z.Tags.Contains("table-tags") && !z.Tags.Contains("inflection-template") && !z.Tags.Contains("class") && z.Word != "-")
+                                                .Select(z => z.Word)).ToArray()
+                                        );
+                                    }
+                                }
+                            }
+                            else // Verb is already at the infinitive
+                            {
+                                conjugaisons.AddRange(
+                                    v.Forms
+                                        .Where(z => !z.Tags.Contains("table-tags") && !z.Tags.Contains("inflection-template") && !z.Tags.Contains("class") && z.Word != "-")
+                                        .Select(z => z.Word).ToArray()
+                                );
+                            }
+                        }
+                        grammar.Add(token.Word.ToLowerInvariant(), conjugaisons.ToArray());
+                    }
+
+                    token.AcceptedWords = [..token.AcceptedWords!, ..grammar[token.Word.ToLowerInvariant()]];
+                    onProgress?.Invoke((int)Math.Floor(i / (float)tokens.Count * 50f));
+                }
+            }
+        }
+
         // For each word we use an API to detect which words are close in meaning
         Dictionary<string, string[]> adjacents = [];
         for (int i = 0; i < tokens.Count; i++)
@@ -116,14 +178,24 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
             {
                 if (!adjacents.ContainsKey(token.Word.ToLowerInvariant()))
                 {
-                    adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<SimilarInfo[]>(
-                        await client.GetStringAsync($"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}"), options)!
-                        .Select(x => x.Word).ToArray()
-                    );
+                    string? url = lang switch
+                    {
+                        Language.English => $"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}",
+                        Language.Spanish => $"https://api.datamuse.com/words?ml={token.Word.ToLowerInvariant()}&v=es",
+                        _ => null
+                    };
+                    if (url != null)
+                    {
+                        adjacents.Add(token.Word.ToLowerInvariant(), JsonSerializer.Deserialize<DatamuseSimilarInfo[]>(
+                            await client.GetStringAsync(url), options)!
+                            .Select(x => x.Word).ToArray()
+                        );
+                    }
                 }
 
                 token.SimilarWords = adjacents[token.Word.ToLowerInvariant()];
-                onProgress?.Invoke((int)Math.Floor(i / (float)tokens.Count * 100f));
+                if (lang == Language.Spanish) onProgress?.Invoke(50 + (int)Math.Floor(i / (float)tokens.Count * 50f)); // Spanish progression started on the previous step with grammar check
+                else onProgress?.Invoke((int)Math.Floor(i / (float)tokens.Count * 100f));
             }
         }
         return tokens.ToArray();
@@ -164,10 +236,10 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
 
         if (!configWork.IsUpToDate(now))
         {
-            if (!configWork.ToggleUpdateFlag(true)) return 0;
-
             try
             {
+                if (!configWork.ToggleUpdateFlag(true)) return 0;
+
                 // Init game
                 localConfigWork.ClearAllLocalConfig();
                 var gameId = Games[Random.Shared.Next(0, Games.Length)];
@@ -193,7 +265,6 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
         }
 
         if (localConfigWork.IsUpToDate(language)) return 0; // Local config is already up to date
-        if (!localConfigWork.ToggleUpdateFlag(language, true)) return 0;
 
         _ = Task.Run(async () =>
         {
@@ -202,6 +273,8 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
                 using var scope = scopeFactory.CreateScope();
                 var configWork = scope.ServiceProvider.GetRequiredService<ConfigWork>();
                 var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
+
+                if (!localConfigWork.ToggleUpdateFlag(language, true)) return;
 
                 var steamDataRaw = localConfigWork.GetSteamAnswer(language);
                 if (steamDataRaw == null) throw new InvalidOperationException("Daily is not available in this language");
@@ -217,9 +290,9 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
                 var desc = DecodeHtml(steamData.DetailedDescription);
 
                 // Parse description into tokens
-                var tokensName = await StringToTokensAsync(steamData.Name, verbs);
-                var tokensDesc = await StringToTokensAsync(desc, verbs, (value) => { SetProgression(language, value); });
-                var tokensShortDesc = await StringToTokensAsync(WebUtility.HtmlDecode(steamData.ShortDescription), verbs);
+                var tokensName = await StringToTokensAsync(language, steamData.Name, verbs);
+                var tokensDesc = await StringToTokensAsync(language, desc, verbs, (value) => { SetProgression(language, value); });
+                var tokensShortDesc = await StringToTokensAsync(language, WebUtility.HtmlDecode(steamData.ShortDescription), verbs);
 
                 var gameConfig = new GameConfig()
                 {

@@ -18,6 +18,7 @@ public class ConfigWork(SqliteContext ctx)
     public void SetGameId(int gameId, string now)
     {
         var g = ctx.Game.First();
+        g.Iteration++; // Setting a new game ID mean we changed the current game
         g.GameId = gameId;
         g.LastUpdate = now;
         ctx.SaveChanges();

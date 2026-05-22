@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react"
 import GuessAreaForm from "./GuessAreaForm"
-import { Link } from "react-router"
 import WinningForm from "./WinningForm"
 import RulesForm from "./RulesForm"
 import type { LastWordInfo } from "../model/LastWordInfo"
@@ -8,6 +7,7 @@ import type { GameData, GameWordData } from "../model/GameData"
 import type { WordBlockData, WordData } from "../model/WordData"
 import AboutForm from "./AboutForm"
 import SettingsForm from "./SettingsForm"
+import { useLocalize } from "localize-react"
 
 function getEndpoint(): string
 {
@@ -24,16 +24,19 @@ function didWin(data: GameWordData[]): boolean
     return data.every(x => x.displayedWord !== null && !x.displayAsClose);
 }
 
-export default function MainForm() {
+interface MainFormProps
+{
+    setLang: React.Dispatch<React.SetStateAction<string>>
+    lang: string
+}
+
+export default function MainForm({ lang, setLang }: MainFormProps) {
     let [data, setData] = useState<GameData | null>(null);
     let [msg, setMsg] = useState<string | null>("Loading...");
     let [input, setInput] = useState("");
     let [canType, setCanType] = useState(true);
     let [haveWon, setHaveWon] = useState(false);
     let [lastInput, setLastInput] = useState<LastWordInfo | null>(null);
-    let [lang, setLang] = useState<string>(() => {
-        return localStorage.getItem("lang") ?? navigator.language?.split('-')[0];
-    });
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Modals
@@ -41,6 +44,8 @@ export default function MainForm() {
     let [showAbout, setShowAbout] = useState(false);
     let [showSettings, setShowSettings] = useState(false);
     let [showRules, setShowRules] = useState((localStorage.getItem("rules") ?? "0") !== "1");
+
+    const { translate } = useLocalize();
 
     function saveGameState(x: GameData) {
         localStorage.setItem(`${x.language}-name`, JSON.stringify(x.name));
@@ -61,7 +66,7 @@ export default function MainForm() {
                     }
 
                     if (!x.isReady) { // Backend is not ready yet...
-                        setMsg(`First connection of the day, data are being initialized, please wait... ${x.progression}%`);
+                        setMsg(translate("main.initialize", { progression: x.progression!.toString() }));
                         if (timeoutID !== null) clearTimeout(timeoutID);
                         timeoutID = setTimeout(getApiInfo, 1_000);
                         return;
@@ -116,7 +121,7 @@ export default function MainForm() {
 
                     setMsg(null)
                 }).catch(err => {
-                    setMsg(`An error occured while initializing game data: ${err}`)
+                    setMsg(translate("error.generic", { error: err }))
                 });
             });
         }
@@ -148,16 +153,20 @@ export default function MainForm() {
     if (msg !== null) {
         return (
             <>
-                {
-                    showRules
-                    ? <RulesForm close={() => { setShowRules(false); localStorage.setItem("rules", "1"); }} />
-                    : <></>
+                { showAbout ? <AboutForm close={() => { setShowAbout(false); }} /> : <></> }
+                { showRules ? <RulesForm close={() => { setShowRules(false); localStorage.setItem("rules", "1"); }} /> : <></> }
+                { showSettings ? <SettingsForm close={() => { setShowSettings(false) }} language={lang} setLanguage={(newLang: string) => {
+                    localStorage.setItem("lang", newLang); // Store user prefered language
+                    setLang(newLang);
+                    }}/> : <></>
                 }
                 <div className="container box">
                     { msg }
                 </div>
-                <div className="container box">
-                    <Link to="/privacy">Privacy & Contact</Link>
+                <div className="container box is-flex">
+                <a onClick={() => { closeModals(); setShowAbout(true); } }>{ translate("footer.privacy_and_contact") }</a>
+                <a onClick={() => { closeModals(); setShowRules(true); } }>{ translate("footer.rules") }</a>
+                <a onClick={() => { closeModals(); setShowSettings(true); } }>{ translate("footer.settings") }</a>
                 </div>
             </>
         )
@@ -178,7 +187,8 @@ export default function MainForm() {
             { showSettings ? <SettingsForm close={() => { setShowSettings(false) }} language={lang} setLanguage={(newLang: string) => {
                 localStorage.setItem("lang", newLang); // Store user prefered language
                 setLang(newLang);
-                }}/> : <></> }
+                }}/> : <></>
+            }
 
             <div className="container box is-flex flex-center-ver" id="input-area">
                 <input ref={inputRef} disabled={!canType} value={input} onChange={x => setInput((x.target as HTMLInputElement).value)} type="text" onKeyDown={e => {
@@ -240,12 +250,12 @@ export default function MainForm() {
             <GuessAreaForm data={data!.shortDescription} id="guess-sdesc" lastInput={lastInput?.data?.shortDescription ?? null} />
             <GuessAreaForm data={data!.description} id="guess-desc" lastInput={lastInput?.data?.description ?? null} />
             <div className="container box is-flex">
-                <a onClick={() => { closeModals(); setShowAbout(true); } }>Privacy & Contact</a>
-                <a onClick={() => { closeModals(); setShowRules(true); } }>Show rules</a>
-                <a onClick={() => { closeModals(); setShowSettings(true); } }>Settings</a>
+                <a onClick={() => { closeModals(); setShowAbout(true); } }>{ translate("footer.privacy_and_contact") }</a>
+                <a onClick={() => { closeModals(); setShowRules(true); } }>{ translate("footer.rules") }</a>
+                <a onClick={() => { closeModals(); setShowSettings(true); } }>{ translate("footer.settings") }</a>
                 {
                     haveWon
-                    ? <a onClick={() => { closeModals(); setShowVictory(true); }}>Show victory popup</a>
+                    ? <a onClick={() => { closeModals(); setShowVictory(true); }}>{ translate("footer.victory") }</a>
                     : <></>
                 }
             </div>

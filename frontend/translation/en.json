@@ -1,0 +1,51 @@
+{
+    "generic": {
+        "close": "Close"
+    },
+    "footer": {
+        "privacy_and_contact": "Privacy & Contact",
+        "rules": "Show rules",
+        "settings": "Settings",
+        "victory": "Show victory popup"
+    },
+    "main": {
+        "initialize": "First connection of the day, data are being initialized, please wait... {{progression}}%"
+    },
+    "error": {
+        "generic": "An error occured while initializing game data: {{error}}"
+    },
+    "about": {
+        "about": "About",
+        "inspired_by": "Game inspired by",
+        "daily_reset": "Daily reset happens at midnight UTC+0",
+        "privacy": "Privacy",
+        "shika_intro": "This website is using Shika for its analytics",
+        "shika_privacy": "You can see all the data collected on here:",
+        "shika_tracking": "Please note that Shika doesn't collect any data that allow to track individual users",
+        "contact_and_contribute": "Contact & contribute",
+        "source_code": "The website source code is available at on",
+        "issue": "For any inquiery, please open an issue or a conversation there"
+    },
+    "rules": {
+        "greetings": "Welcome to {{gamename}}",
+        "goal_1": "Your goal is to find what PC game is hidden behind this description",
+        "goal_2": "For that, use the input bar at the top to enter words",
+        "green_1": "If the word appear <span class='found-word'>green</span>, good job, you just found a word!",
+        "green_2": "Once you enter more, the word will then turn white",
+        "orange_1": "If the word appear <span style='color: rgb(255, 166, 0)'>orange</span>, eeh, you are close but that's not totally it.",
+        "orange_2": "Watch the <span style='color: rgba(255, 166, 0, 0.6)'>transparency</span> of the word tho, the more opaque, the closer it is to the word you're looking for!",
+        "length": "A last little tip before you go, click on a word you haven't found to see the amount of characters it contains",
+        "good_luck": "Good luck!",
+        "got_it": "Got it!"
+    },
+    "settings": {
+        "language": "Language",
+        "language_warn": "Language availability will depend of the daily game found"
+    },
+    "win": {
+        "title": "You finished the {{gamename}} #{{number}}",
+        "text_copied": "Text copied to clipboard",
+        "copy_share": "Copy to share",
+        "completion": "Completion: {{completion}}%"
+    }
+}

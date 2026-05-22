@@ -216,6 +216,10 @@ input[type=text] {
     border-radius: var(--border-radius);
     z-index: 2;
 }
+.modal p {
+    margin: 0;
+    align-self: flex-start;
+}
 .modal h1 {
     text-align: center;
     margin-top: 10px;

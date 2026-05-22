@@ -8,7 +8,7 @@ internal class GameContext
 
     public string LastUpdate { set; get; } = "";
 
-    public int Iteration { set; get; } = 0;
+    public int Iteration { set; get; } = 1;
 
     public int GameId { set; get; } = 0;
 
