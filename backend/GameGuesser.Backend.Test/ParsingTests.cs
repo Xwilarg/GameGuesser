@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using GameGuesser.Backend.Backend.Models;
 using GameGuesser.Backend.Database.Interfaces;
+using GameGuesser.Backend.Database.Models;
 using GameGuesser.Backend.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text.Json;
@@ -69,7 +70,7 @@ namespace GameGuesser.Backend.Test
         [Test]
         public async Task TestTokenParsing()
         {
-            var tokens = await _config.StringToTokensAsync("a great journey to drink water, with you", _verbs);
+            var tokens = await _config.StringToTokensAsync(Language.English, "a great journey to drink water, with you", _verbs);
             tokens.Should().BeEquivalentTo([
                 new Token()
                 {
