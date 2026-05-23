@@ -1,0 +1,51 @@
+{
+    "generic": {
+        "close": "Cerrar"
+    },
+    "footer": {
+        "privacy_and_contact": "Privacidad y Contacto",
+        "rules": "Ver reglas",
+        "settings": "Configuración",
+        "victory": "Mostrar pantalla de victoria"
+    },
+    "main": {
+        "initialize": "Primera conexión del día, los datos se están inicializando, por favor espera... {{progression}}%"
+    },
+    "error": {
+        "generic": "Ocurrió un error al inicializar los datos del juego: {{error}}"
+    },
+    "about": {
+        "about": "Acerca de",
+        "inspired_by": "Juego inspirado en",
+        "daily_reset": "El reinicio diario ocurre a medianoche UTC+0",
+        "privacy": "Privacidad",
+        "shika_intro": "Este sitio web usa Shika para sus analíticas",
+        "shika_privacy": "Puedes ver todos los datos recopilados aquí:",
+        "shika_tracking": "Ten en cuenta que Shika no recopila ningún dato que permita rastrear usuarios individuales",
+        "contact_and_contribute": "Contacto y contribución",
+        "source_code": "El código fuente del sitio web está disponible en",
+        "issue": "Para cualquier consulta, por favor abre un reporte o una conversación allí"
+    },
+    "rules": {
+        "greetings": "Bienvenido/a a {{gamename}}",
+        "goal_1": "Tu objetivo es descubrir qué videojuego de PC se esconde detrás de esta descripción",
+        "goal_2": "Para eso, usa la barra de búsqueda en la parte superior para ingresar palabras",
+        "green_1": "Si la palabra aparece <span class='found-word'>en verde</span>, ¡bien hecho, encontraste una palabra!",
+        "green_2": "A medida que ingreses más, la palabra se volverá blanca",
+        "orange_1": "Si la palabra aparece <span style='color: rgb(255, 166, 0)'>en naranja</span>, mmm, estás cerca pero no es exactamente esa.",
+        "orange_2": "Presta atención a la <span style='color: rgba(255, 166, 0, 0.6)'>transparencia</span> de la palabra: ¡cuanto más opaca, más cerca estás de la palabra que buscas!",
+        "length": "Un último consejo antes de empezar: haz clic en una palabra que no hayas encontrado para ver cuántos caracteres tiene",
+        "good_luck": "¡Buena suerte!",
+        "got_it": "¡Entendido!"
+    },
+    "settings": {
+        "language": "Idioma",
+        "language_warn": "La disponibilidad del idioma dependerá del juego diario encontrado"
+    },
+    "win": {
+        "title": "Completaste el {{gamename}} #{{number}}",
+        "text_copied": "Texto copiado al portapapeles",
+        "copy_share": "Copiar para compartir",
+        "completion": "Completado: {{completion}}%"
+    }
+}

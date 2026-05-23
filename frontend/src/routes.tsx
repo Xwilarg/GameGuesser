@@ -4,6 +4,7 @@ import { useState, type ReactElement } from 'react';
 import MainForm from './form/MainForm';
 import { LocalizationProvider } from 'localize-react';
 import translationsEn from "../translation/en.json";
+import translationsEs from "../translation/es.json";
 
 interface AppRouterProps {
     lang: string;
@@ -24,7 +25,8 @@ function App() {
     });
 
     const translations = {
-        "en": translationsEn
+        "en": translationsEn,
+        "es": translationsEs
     }
 
     return (
