@@ -234,6 +234,7 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
         };
 
+        int gameId;
         if (!configWork.IsUpToDate(now))
         {
             try
@@ -241,8 +242,8 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
                 if (!configWork.ToggleUpdateFlag(true)) return 0;
 
                 // Init game
-                localConfigWork.ClearAllLocalConfig();
-                var gameId = Games[Random.Shared.Next(0, Games.Length)];
+                gameId = Games[Random.Shared.Next(0, Games.Length)];
+                localConfigWork.ClearAllLocalConfig(gameId);
                 configWork.SetGameId(gameId, now);
 
                 // Set availabilies
@@ -263,18 +264,18 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
                 configWork.ToggleUpdateFlag(false);
             }
         }
+        else gameId = configWork.GetGameId();
 
         if (localConfigWork.IsUpToDate(language)) return 0; // Local config is already up to date
 
         _ = Task.Run(async () =>
         {
+            using var scope = scopeFactory.CreateScope();
+            var configWork = scope.ServiceProvider.GetRequiredService<ConfigWork>();
+            var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
             try
             {
-                using var scope = scopeFactory.CreateScope();
-                var configWork = scope.ServiceProvider.GetRequiredService<ConfigWork>();
-                var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
-
-                if (!localConfigWork.ToggleUpdateFlag(language, true)) return;
+                if (!localConfigWork.ToggleUpdateFlag(language, true) || !localConfigWork.IsGameIdValid(language, gameId)) return;
 
                 var steamDataRaw = localConfigWork.GetSteamAnswer(language);
                 if (steamDataRaw == null) throw new InvalidOperationException("Daily is not available in this language");
@@ -300,7 +301,10 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
                     Description = tokensDesc,
                     ShortDescription = tokensShortDesc
                 };
-                localConfigWork.SetGameConfig(language, gameConfig);
+                if (!localConfigWork.SetGameConfig(language, gameConfig, gameId))
+                {
+                    throw new InvalidOperationException("Failed to update config, game id is outdated");
+                }
             }
             catch (Exception e)
             {

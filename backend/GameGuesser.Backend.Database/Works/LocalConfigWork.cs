@@ -30,10 +30,11 @@ public class LocalConfigWork(SqliteContext ctx, JsonSerializerOptions opt)
     /// <summary>
     /// Clear all local data, used when a new day happen
     /// </summary>
-    public void ClearAllLocalConfig()
+    public void ClearAllLocalConfig(int gameId)
     {
         foreach (var local in ctx.LocalGames)
         {
+            local.GameId = gameId;
             local.Game = null;
             local.SteamApi = null;
         }
@@ -58,10 +59,19 @@ public class LocalConfigWork(SqliteContext ctx, JsonSerializerOptions opt)
         return GetConfig(language).SteamApi;
     }
 
-    public void SetGameConfig(Language language, GameConfig game)
+    public bool SetGameConfig(Language language, GameConfig game, int gameId)
     {
-        GetConfig(language).Game = JsonSerializer.Serialize(game, opt);
+        var config = GetConfig(language);
+        if (config.GameId != gameId) return false;
+        config.Game = JsonSerializer.Serialize(game, opt);
         ctx.SaveChanges();
+        return true;
+    }
+
+    public bool IsGameIdValid(Language language, int gameId)
+    {
+        var config = GetConfig(language);
+        return config.GameId == gameId;
     }
 
     public bool IsUpdating(Language language)

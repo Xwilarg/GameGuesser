@@ -15,6 +15,11 @@ public class ConfigWork(SqliteContext ctx)
         return ctx.Game.First().Iteration;
     }
 
+    public int GetGameId()
+    {
+        return ctx.Game.First().GameId;
+    }
+
     public void SetGameId(int gameId, string now)
     {
         var g = ctx.Game.First();

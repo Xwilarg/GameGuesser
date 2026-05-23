@@ -33,3 +33,5 @@ Game data taken from Steam \
 English verbs from https://github.com/monolithpl/verb.forms.dictionary \
 Spanish verbs from https://freedictionaryapi.com/ \
 English and spanish word ajacency from https://www.datamuse.com/api/
+
+Special thanks to Pauline for the spanish translation

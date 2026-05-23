@@ -11,5 +11,7 @@ internal class LocalGameContext
     public string? Game { set; get; } = null;
     public string? Verbs { set; get; } = null;
 
+    public int GameId { set; get; } = 0;
+
     public bool IsUpdating { set; get; } = false;
 }
