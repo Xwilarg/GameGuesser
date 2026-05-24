@@ -44,7 +44,7 @@ export default function WinningForm({ state, close }: WinningFormProps) {
                     .then(() => window.alert(translate("win.text_copied")))
                     .catch(() => window.prompt(translate("win.copy_share"), shareText));
                 }}>Share</button>
-                <button onClick={close}>Close</button>
+                <button onClick={close}>{translate("generic.close")}</button>
             </div>
         </div>
     )

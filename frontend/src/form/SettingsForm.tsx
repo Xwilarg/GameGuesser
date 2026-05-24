@@ -20,7 +20,7 @@ export default function SettingsForm({ close, language, setLanguage }: SettingsF
                     <option value="es">Español</option>
                 </select>
             </div>
-            <button onClick={close}>Close</button>
+            <button onClick={close}>{translate("generic.close")}</button>
         </div>
     )
 }
