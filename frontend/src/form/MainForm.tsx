@@ -47,6 +47,16 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
 
     const { translate } = useLocalize();
 
+    function clearGameState()
+    {
+        for (let lang of [ "en", "es" ])
+        {
+            localStorage.removeItem(`${lang}-name`)
+            localStorage.removeItem(`${lang}-shortdesc`)
+            localStorage.removeItem(`${lang}-desc`)
+        }
+    }
+
     function saveGameState(x: GameData) {
         localStorage.setItem(`${x.language}-name`, JSON.stringify(x.name));
         localStorage.setItem(`${x.language}-shortdesc`, JSON.stringify(x.shortDescription));
@@ -109,11 +119,13 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                         {
                             console.warn("Failed to deserialize game state from local storation, resetting data");
                             localStorage.setItem("iteration", x.iteration.toString());
+                            clearGameState();
                             saveGameState(x);
                             setData(x);
                         }
                     } else {
                         localStorage.setItem("iteration", x.iteration.toString());
+                        clearGameState();
                         saveGameState(x);
                         
                         setData(x);
