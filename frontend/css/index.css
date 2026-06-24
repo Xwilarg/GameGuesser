@@ -235,6 +235,12 @@ input[type=text] {
 .winning-modal > * {
     position: fixed;
 }
+.winning-modal .is-flex {
+    margin-top: 10px;
+}
+.winning-modal video {
+    width: 80%;
+}
 .winning-modal .background-image {
     width: 100%;
     height: 100%;

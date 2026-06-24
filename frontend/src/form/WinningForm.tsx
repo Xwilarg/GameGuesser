@@ -1,9 +1,10 @@
 import { useLocalize } from "localize-react";
 import type { GameData } from "../model/GameData";
 import { getGameName } from "./MainForm";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { type RevealData } from "../model/RevealData";
 import { Link } from "react-router";
+import Hls from "hls.js";
 
 interface WinningFormProps {
     state: GameData
@@ -40,12 +41,23 @@ export default function WinningForm({ state, close, endpoint, lang }: WinningFor
 
     const { translate } = useLocalize();
     const [ revealData, setRevealData ] = useState<RevealData | null>(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
         fetch(`${endpoint}/api/reveal/${lang}`)
         .then(x => x.json())
         .then(x => setRevealData(x));
     }, []);
+
+    useEffect(() => {
+        if (!revealData) return;
+
+        const video = videoRef.current;
+
+        const hls = new Hls();
+        hls.loadSource(revealData.videoLink);
+        hls.attachMedia(video!);
+    }, [ revealData ])
 
     return (
         <div className='modal is-flex flex-center-hor flex-center-ver winning-modal'>
@@ -68,11 +80,13 @@ export default function WinningForm({ state, close, endpoint, lang }: WinningFor
                             : <></>
                     }
                 </div>
+                <div className="is-flex flex-center-hor">
                 {
                     revealData
-                        ? <video src={revealData.videoLink} controls></video>
+                        ? <video ref={videoRef} controls></video>
                         : <></>
                 }
+                </div>
             </div>
         </div>
     )
