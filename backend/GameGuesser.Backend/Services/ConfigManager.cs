@@ -214,7 +214,7 @@ public class ConfigManager(JsonSerializerOptions options, IHttpHandler client, I
         return await client.GetStringAsync($"https://store.steampowered.com/api/appdetails?appids={gameId}&l={LanguageUtils.LanguageToEnglishString(language)}");
     }
 
-    private SteamGameEntryInfo ParseSteamApiAnswer(string json, JsonSerializerOptions steamJsonOpt)
+    public SteamGameEntryInfo ParseSteamApiAnswer(string json, JsonSerializerOptions steamJsonOpt)
     {
         return JsonSerializer.Deserialize<SteamGameInfo>(json, steamJsonOpt)!.First()!.Value;
     }

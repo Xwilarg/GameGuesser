@@ -4,6 +4,7 @@ using GameGuesser.Backend.Database.Works;
 using GameGuesser.Backend.Models.Responses;
 using GameGuesser.Backend.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 namespace Katsis.Intranet.Controllers;
 
@@ -41,8 +42,40 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
         };
     }
 
+    [HttpGet("reveal/{language}")]
+    [ProducesResponseType<RevealInfo>(200)]
+    public async Task<IActionResult> RevealAnswer(string language)
+    {
+        var lang = LanguageUtils.StringCountryCodeToLanguage(language);
+        if (lang == null)
+        {
+            return StatusCode(StatusCodes.Status400BadRequest, "The language provided is invalid");
+        }
+
+        using var scope = scopeFactory.CreateScope();
+
+        var configManager = scope.ServiceProvider.GetRequiredService<ConfigManager>();
+        var configWork = scope.ServiceProvider.GetRequiredService<ConfigWork>();
+        var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
+
+        var steamDataRaw = localConfigWork.GetSteamAnswer(lang.Value);
+        if (steamDataRaw == null) throw new InvalidOperationException("Daily is not available in this language");
+        var steamJsonOpt = new JsonSerializerOptions()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        };
+        var steamData = configManager.ParseSteamApiAnswer(steamDataRaw, steamJsonOpt).Data;
+
+        return StatusCode(StatusCodes.Status200OK, new RevealInfo()
+        {
+            SteamLink = $"https://store.steampowered.com/app/{configWork.GetGameId()}",
+            VideoLink = steamData.Movies.FirstOrDefault()?.HlsH264,
+            BackgroundImage = steamData.Screenshots.FirstOrDefault()?.PathFull
+        });
+    }
+
     [HttpGet("validate/{language}/{word}")]
-    [ProducesResponseType<WordInfo>(400)]
+    [ProducesResponseType<WordInfo>(200)]
     public async Task<IActionResult> ValidateWord(string language, string word)
     {
         if (string.IsNullOrWhiteSpace(word))
