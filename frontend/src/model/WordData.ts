@@ -21,4 +21,5 @@ interface WordIndexScoreInfo
 {
     index: number
     score: number // Between 0 and 1, how close the word is from the one we need to find
+    isBetter: boolean
 }

@@ -83,7 +83,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                     }
 
                     // Init field
-                    // We note these fields as "to be guessed" depending of how they are given from the APOI
+                    // We note these fields as "to be guessed" depending of how they are given from the API
                     for (let t of x.name) {
                         t.needToBeGuessed = t.displayedWord === null;
                         t.displayAsClose = null;
@@ -151,9 +151,12 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
 
     function updateTokenList(tokens: GameWordData[], x: WordBlockData) {
         for (let ci of x.closeIndexes) {
-            if (tokens[ci.index].displayedWord === null || (tokens[ci.index].displayAsClose !== null && ci.score > tokens[ci.index].displayAsClose!)) { // Don't replace words we already found
+            if (tokens[ci.index].displayedWord === null || (tokens[ci.index].displayAsClose !== null && ci.score >= tokens[ci.index].displayAsClose!)) { // Don't replace words we already found
                 tokens[ci.index].displayedWord = input;
                 tokens[ci.index].displayAsClose = ci.score;
+                ci.isBetter = true;
+            } else {
+                ci.isBetter = false;
             }
         }
         for (let fi of x.foundIndexes) {
@@ -213,10 +216,6 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                             throw new Error();
                         })
                         .then((x: WordData) => {
-                            setLastInput({
-                                word: input,
-                                data: x
-                            });
                             setData(d => {
                                 let nameTokens = [...d!.name];
                                 let descriptionTokens = [...d!.description];
@@ -233,6 +232,14 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                                     description: descriptionTokens,
                                     shortDescription: shortDescriptionTokens
                                 };
+                                setLastInput({
+                                    word: input,
+                                    data: {
+                                        name: x.name,
+                                        description: x.description,
+                                        shortDescription: x.shortDescription
+                                    }
+                                });
                                 saveGameState(newData);
                                 if (!haveWon && didWin(newData.name)) {
                                     setHaveWon(true);
@@ -252,7 +259,11 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                     <>
                         <span id="last-word">{ lastInput.word }</span>
                         <span id="last-found">{lastInput.data.name.foundIndexes.length + lastInput.data.shortDescription.foundIndexes.length + lastInput.data.description.foundIndexes.length}</span>
-                        <span id="last-close">{lastInput.data.name.closeIndexes.length + lastInput.data.shortDescription.closeIndexes.length + lastInput.data.description.closeIndexes.length}</span>
+                        <span id="last-close">{
+                            lastInput.data.name.closeIndexes.filter(x => x.isBetter).length +
+                            lastInput.data.shortDescription.closeIndexes.filter(x => x.isBetter).length +
+                            lastInput.data.description.closeIndexes.filter(x => x.isBetter).length
+                        }</span>
                     </>
                     : <></>
                 }
