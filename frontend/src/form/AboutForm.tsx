@@ -19,7 +19,7 @@ export default function AboutForm({ close }: AboutFormProps) {
                 {translate("about.shika_privacy")} <a href="https://astylodon.org/docs/shika/data" target='_blank'>https://astylodon.org/docs/shika/data</a><br/>
                 {translate("about.shika_tracking")}
                 <h2>{translate("about.contact_and_contribute")}</h2>
-                {translate("about.source_code")}<a href="https://github.com/Xwilarg/GameGuesser" target="_blank">GitHub</a><br/>
+                {translate("about.source_code")} <a href="https://github.com/Xwilarg/GameGuesser" target="_blank">GitHub</a><br/>
                 {translate("about.issue")}
             </div>
             <button onClick={close}>{translate("generic.close")}</button>

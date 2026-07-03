@@ -4,7 +4,7 @@ import type { WordBlockData } from "../model/WordData";
 
 interface GuessAreaFormProps {
     data: GameWordData[]
-    lastInput: WordBlockData | null
+    lastInput: number[] | null
     id: string
 }
 
@@ -46,7 +46,7 @@ const GuessAreaForm = forwardRef((
             const currIndex = cumulativeIndex;
             const elem = line[i2];
             const key = `text-${id}-${i1}-${i2}`;
-            if (lastInput !== null && lastInput.foundIndexes.some(x => x.index === cumulativeIndex))
+            if (lastInput !== null && lastInput.some(x => x === cumulativeIndex))
             {
                 // We just found this word, we highlight it
                 block.push(

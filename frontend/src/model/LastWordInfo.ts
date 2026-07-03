@@ -1,7 +1,10 @@
-import type { WordData } from "./WordData"
-
 export interface LastWordInfo
 {
     word: string
-    data: WordData
+    close: number
+
+    // Indexes
+    foundName: number[]
+    foundDesc: number[]
+    foundShortDesc: number[]
 }

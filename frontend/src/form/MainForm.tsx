@@ -8,6 +8,7 @@ import type { WordBlockData, WordData } from "../model/WordData"
 import AboutForm from "./AboutForm"
 import SettingsForm from "./SettingsForm"
 import { useLocalize } from "localize-react"
+import { type WordHistoryData } from "../model/WordHistoryData"
 
 function getEndpoint(): string
 {
@@ -34,9 +35,9 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
     let [data, setData] = useState<GameData | null>(null);
     let [msg, setMsg] = useState<string | null>("Loading...");
     let [input, setInput] = useState("");
-    let [canType, setCanType] = useState(true);
     let [haveWon, setHaveWon] = useState(false);
     let [lastInput, setLastInput] = useState<LastWordInfo | null>(null);
+    let [history, setHistory] = useState<WordHistoryData[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Modals
@@ -61,6 +62,10 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
         localStorage.setItem(`${x.language}-name`, JSON.stringify(x.name));
         localStorage.setItem(`${x.language}-shortdesc`, JSON.stringify(x.shortDescription));
         localStorage.setItem(`${x.language}-desc`, JSON.stringify(x.description));
+    }
+
+    function saveHistory(lang: string, history: WordHistoryData[]) {
+        localStorage.setItem(`${lang}-history`, JSON.stringify(history));
     }
 
     useEffect(() => {
@@ -96,6 +101,8 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                         t.needToBeGuessed = t.displayedWord === null;
                         t.displayAsClose = null;
                     }
+
+                    setHistory(JSON.parse(localStorage.getItem(`${x.language}-history`) ?? "[]").filter((x: WordHistoryData) => x.gotApiResponse));
 
                     if (parseInt(localStorage.getItem("iteration") ?? "0") === x.iteration) {
                         try
@@ -144,10 +151,6 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
             if (timeoutID !== null) clearTimeout(timeoutID);
         }
     }, [ lang ]);
-
-    useEffect(() => {
-        if (canType) inputRef?.current?.focus();
-    }, [ canType ])
 
     function updateTokenList(tokens: GameWordData[], x: WordBlockData) {
         for (let ci of x.closeIndexes) {
@@ -198,7 +201,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
         <>
             { showAbout ? <AboutForm close={() => { setShowAbout(false); }} /> : <></> }
             { showRules ? <RulesForm close={() => { setShowRules(false); localStorage.setItem("rules", "1"); }} /> : <></> }
-            { showVictory ? <WinningForm close={() => { setShowVictory(false) }} state={data!} endpoint={getEndpoint()} lang={lang} /> : <></> }
+            { showVictory ? <WinningForm close={() => { setShowVictory(false) }} state={data!} history={history} endpoint={getEndpoint()} lang={lang} /> : <></> }
             { showSettings ? <SettingsForm close={() => { setShowSettings(false) }} language={lang} setLanguage={(newLang: string) => {
                 localStorage.setItem("lang", newLang); // Store user prefered language
                 setLang(newLang);
@@ -206,72 +209,129 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
             }
 
             <div className="container box is-flex flex-center-ver" id="input-area">
-                <input ref={inputRef} disabled={!canType} value={input} onChange={x => setInput((x.target as HTMLInputElement).value)} type="text" onKeyDown={e => {
+                <input ref={inputRef} value={input} onChange={x => setInput((x.target as HTMLInputElement).value)} type="text" onKeyDown={e => {
                     if (e.key === "Enter")
                     {
-                        setCanType(false)
-                        fetch(`${getEndpoint()}/api/validate/${lang}/${input}`)
-                        .then(x => {
-                            if (x.ok) return x.json();
-                            throw new Error();
-                        })
-                        .then((x: WordData) => {
-                            setData(d => {
-                                let nameTokens = [...d!.name];
-                                let descriptionTokens = [...d!.description];
-                                let shortDescriptionTokens = [...d!.shortDescription];
-                                updateTokenList(nameTokens, x.name);
-                                updateTokenList(descriptionTokens, x.description);
-                                updateTokenList(shortDescriptionTokens, x.shortDescription);
-                                let newData = {
-                                    isReady: true,
-                                    progression: undefined,
-                                    language: lang,
-                                    iteration: d!.iteration,
-                                    name: nameTokens,
-                                    description: descriptionTokens,
-                                    shortDescription: shortDescriptionTokens
-                                };
-                                setLastInput({
-                                    word: input,
+                        // Clean input
+                        input = input.trim();
+
+                        const histInput = history.find(x => x.data.word.toLowerCase() === input.toLowerCase());
+                        if (histInput && histInput.data.close === 0) {
+                            // Word was already typed
+                            setLastInput(histInput!.data)
+                        } else {
+                            // Add word to history
+                            if (!histInput) {
+                                history.push({
+                                    gotApiResponse: false,
                                     data: {
-                                        name: x.name,
-                                        description: x.description,
-                                        shortDescription: x.shortDescription
+                                        word: input,
+                                        close: 0,
+                                        foundName: [],
+                                        foundDesc: [],
+                                        foundShortDesc: []
                                     }
                                 });
-                                saveGameState(newData);
-                                if (!haveWon && didWin(newData.name)) {
-                                    setHaveWon(true);
-                                    setShowVictory(true);
-                                }
-                                return newData;
+                                setHistory([...history]);
+                                saveHistory(lang, history);
+                            }
+
+                            fetch(`${getEndpoint()}/api/validate/${lang}/${input}`)
+                            .then(x => {
+                                if (x.ok) return x.json();
+                                throw new Error();
                             })
-                            setInput("");
-                            setCanType(true);
-                        })
-                        .catch(_ => setCanType(true));
+                            .then((x: WordData) => {
+                                setData(d => {
+                                    let nameTokens = [...d!.name];
+                                    let descriptionTokens = [...d!.description];
+                                    let shortDescriptionTokens = [...d!.shortDescription];
+                                    updateTokenList(nameTokens, x.name);
+                                    updateTokenList(descriptionTokens, x.description);
+                                    updateTokenList(shortDescriptionTokens, x.shortDescription);
+                                    let newData = {
+                                        isReady: true,
+                                        progression: undefined,
+                                        language: lang,
+                                        iteration: d!.iteration,
+                                        name: nameTokens,
+                                        description: descriptionTokens,
+                                        shortDescription: shortDescriptionTokens
+                                    };
+                                    const lastInput = {
+                                        word: input,
+                                        close: 
+                                            x.name.closeIndexes.filter(x => x.isBetter).length +
+                                            x.shortDescription.closeIndexes.filter(x => x.isBetter).length +
+                                            x.description.closeIndexes.filter(x => x.isBetter).length,
+                                        foundName: x.name.foundIndexes.map(x => x.index),
+                                        foundDesc: x.description.foundIndexes.map(x => x.index),
+                                        foundShortDesc: x.shortDescription.foundIndexes.map(x => x.index)
+                                    };
+                                    setLastInput(lastInput);
+
+                                    // Update history
+                                    if (histInput)
+                                    {
+                                        histInput.data = lastInput;
+                                    }
+                                    else
+                                    {
+                                        let h = history.find(x => x.data.word === input)!;
+                                        h.gotApiResponse = true;
+                                        h.data = lastInput;
+                                    }
+
+                                    setHistory([...history]);
+                                    saveHistory(lang, history);
+                                    saveGameState(newData);
+                                    if (!haveWon && didWin(newData.name)) {
+                                        setHaveWon(true);
+                                        setShowVictory(true);
+                                    }
+                                    return newData;
+                                })
+                            })
+                            .catch(() => {
+                                if (!histInput) {
+                                    let h = history.find(x => x.data.word === input)!;
+                                    const index = history.indexOf(h);
+                                    history.splice(index, 1);
+                                    setHistory([...history]);
+                                    saveHistory(lang, history);
+                                }
+                            });
+                        }
+                        setInput("");
+                        inputRef?.current?.focus();
                     }
                 }} />
                 <p id="last-input" className="is-flex flex-center-ver">
                 {
                     lastInput ?
                     <>
-                        <span id="last-word">{ lastInput.word }</span>
-                        <span id="last-found">{lastInput.data.name.foundIndexes.length + lastInput.data.shortDescription.foundIndexes.length + lastInput.data.description.foundIndexes.length}</span>
-                        <span id="last-close">{
-                            lastInput.data.name.closeIndexes.filter(x => x.isBetter).length +
-                            lastInput.data.shortDescription.closeIndexes.filter(x => x.isBetter).length +
-                            lastInput.data.description.closeIndexes.filter(x => x.isBetter).length
-                        }</span>
+                        <span className="last-word">{ lastInput.word }</span>
+                        <span className="last-found">{ lastInput.foundName.length + lastInput.foundDesc.length + lastInput.foundShortDesc.length }</span>
+                        <span className="last-close">{ lastInput.close }</span>
                     </>
                     : <></>
                 }
                 </p>
             </div>
-            <GuessAreaForm data={data!.name} id="guess-name" lastInput={lastInput?.data?.name ?? null} />
-            <GuessAreaForm data={data!.shortDescription} id="guess-sdesc" lastInput={lastInput?.data?.shortDescription ?? null} />
-            <GuessAreaForm data={data!.description} id="guess-desc" lastInput={lastInput?.data?.description ?? null} />
+            <div id="history" className="container box is-flex">
+                {
+                    [...history].reverse().map(x =>
+                        <div className="is-flex">
+                            <span className="last-word">{ x.data.word }</span>
+                            <span className="last-found">{ x.data.foundName.length + x.data.foundDesc.length + x.data.foundShortDesc.length }</span>
+                            <span className="last-close">{ x.data.close }</span>
+                        </div>
+                    )
+                }
+            </div>
+            <GuessAreaForm data={data!.name} id="guess-name" lastInput={lastInput?.foundName ?? null} />
+            <GuessAreaForm data={data!.shortDescription} id="guess-sdesc" lastInput={lastInput?.foundShortDesc ?? null} />
+            <GuessAreaForm data={data!.description} id="guess-desc" lastInput={lastInput?.foundDesc ?? null} />
             <div className="container box is-flex">
                 <a onClick={() => { closeModals(); setShowAbout(true); } }>{ translate("footer.privacy_and_contact") }</a>
                 <a onClick={() => { closeModals(); setShowRules(true); } }>{ translate("footer.rules") }</a>

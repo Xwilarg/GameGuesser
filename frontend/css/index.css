@@ -20,7 +20,7 @@ html {
 }
 
 body {
-    margin-top: 30px;
+    margin-top: 10px;
 
     /* https://stackoverflow.com/a/50277867 */
     background:
@@ -126,7 +126,7 @@ button, .button {
     align-items: baseline;
 }
 #guess-desc {
-    height: calc(100vh - 390px);
+    height: calc(100vh - 510px);
     overflow-y: scroll;
     scrollbar-color: var(--primary-light) transparent;
     align-items: baseline;
@@ -156,10 +156,10 @@ button, .button {
     font-size: 25px;
     gap: 0;
 }
-#input-area #last-word {
+#input-area .last-word {
     margin-right: 10px;
 }
-#last-close {
+.last-close {
     background-color: rgb(133, 86, 0);
     padding-left: 10px;
     padding-right: 10px;
@@ -168,7 +168,7 @@ button, .button {
     width: 25px;
     text-align: center;
 }
-#last-found {
+.last-found {
     background-color: rgb(92, 138, 92);
     padding-left: 10px;
     padding-right: 10px;
@@ -187,7 +187,7 @@ button, .button {
         width: 100%;
         padding-left: 10px;
     }
-    #input-area #last-word {
+    #input-area .last-word {
         order: 1;
         padding-left: 10px;
     }
@@ -199,6 +199,31 @@ input[type=text] {
     border-radius: var(--border-radius);
     padding: 5px;
     color: var(--primary-light);
+}
+
+#history {
+    height: 110px;
+    flex-direction: column;
+    align-content: flex-start;
+    overflow-x: scroll;
+    scrollbar-color: var(--primary-light) transparent;
+}
+#history > div {
+    width: 150px;
+    gap: 0;
+}
+#history .last-word {
+    width: 85px;
+    display: inline-block;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    order: 1;
+    padding-left: 5px;
+}
+#history .last-found, #history .last-close {
+    width: 30px;
+    padding: 0;
+    text-align: center;
 }
 
 /* Modal */

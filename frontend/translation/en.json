@@ -46,6 +46,6 @@
         "title": "You finished the {{gamename}} #{{number}}",
         "text_copied": "Text copied to clipboard",
         "copy_share": "Copy to share",
-        "completion": "Completion: {{completion}}%"
+        "completion_count": "Found in {{tries}} tries"
     }
 }
