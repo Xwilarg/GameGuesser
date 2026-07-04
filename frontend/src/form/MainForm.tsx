@@ -55,6 +55,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
             localStorage.removeItem(`${lang}-name`)
             localStorage.removeItem(`${lang}-shortdesc`)
             localStorage.removeItem(`${lang}-desc`)
+            localStorage.removeItem(`${lang}-history`)
         }
     }
 
@@ -102,12 +103,12 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                         t.displayAsClose = null;
                     }
 
-                    setHistory(JSON.parse(localStorage.getItem(`${x.language}-history`) ?? "[]").filter((x: WordHistoryData) => x.gotApiResponse));
-
                     if (parseInt(localStorage.getItem("iteration") ?? "0") === x.iteration) {
                         try
                         {
                             const name: GameWordData[] = JSON.parse(localStorage.getItem(`${x.language}-name`)!);
+                            const savedHistory = JSON.parse(localStorage.getItem(`${x.language}-history`) ?? "[]").filter((x: WordHistoryData) => x.gotApiResponse);
+                            setHistory(savedHistory);
                             setData({
                                 isReady: true,
                                 progression: x.progression,
