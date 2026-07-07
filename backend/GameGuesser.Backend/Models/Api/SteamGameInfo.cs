@@ -15,7 +15,7 @@ public class SteamGameDataInfo
     public required string ShortDescription { set; get; }
 
     public required SteamGameGenreInfo[] Genres { set; get; }
-    public required SteamGameMovieInfo[] Movies { set; get; }
+    public SteamGameMovieInfo[]? Movies { set; get; }
     public required SteamGameScreenshotInfo[] Screenshots { set; get; }
 }
 

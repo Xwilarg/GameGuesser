@@ -69,7 +69,7 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
         return StatusCode(StatusCodes.Status200OK, new RevealInfo()
         {
             SteamLink = $"https://store.steampowered.com/app/{configWork.GetGameId()}",
-            VideoLink = steamData.Movies.FirstOrDefault()?.HlsH264,
+            VideoLink = steamData.Movies?.FirstOrDefault()?.HlsH264,
             BackgroundImage = steamData.Screenshots.FirstOrDefault()?.PathFull
         });
     }
