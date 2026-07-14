@@ -67,7 +67,7 @@ button, .button {
     width: 70vw;
 }
 .sub-column {
-    width: calc(15vw - 5px);
+    width: calc(15vw - 15px);
 }
 .box {
     position: relative;
