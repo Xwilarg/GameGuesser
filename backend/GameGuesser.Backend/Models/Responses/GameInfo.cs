@@ -15,6 +15,7 @@
         public required GameToken[] Name { set; get; }
         public required GameToken[] ShortDescription { set; get; }
         public required GameToken[] Description { set; get; }
+        public required int HintCount { set; get; }
     }
 
     public class GameToken

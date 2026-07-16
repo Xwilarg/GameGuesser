@@ -42,6 +42,30 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
         };
     }
 
+    [HttpGet("hint/{language}")]
+    [ProducesResponseType<IEnumerable<string>>(200)]
+    public async Task<IActionResult> GetHints(string language)
+    {
+        var lang = LanguageUtils.StringCountryCodeToLanguage(language);
+        if (lang == null)
+        {
+            return StatusCode(StatusCodes.Status400BadRequest, "The language provided is invalid");
+        }
+
+        using var scope = scopeFactory.CreateScope();
+        var localConfigWork = scope.ServiceProvider.GetRequiredService<LocalConfigWork>();
+
+        var steamDataRaw = localConfigWork.GetSteamAnswer(lang.Value);
+        if (steamDataRaw == null) throw new InvalidOperationException("Daily is not available in this language");
+        var steamJsonOpt = new JsonSerializerOptions()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        };
+        var steamData = configManager.ParseSteamApiAnswer(steamDataRaw, steamJsonOpt).Data;
+
+        return StatusCode(StatusCodes.Status200OK, steamData.Genres.Select(x => x.Description));
+    }
+
     [HttpGet("reveal/{language}")]
     [ProducesResponseType<RevealInfo>(200)]
     public async Task<IActionResult> RevealAnswer(string language)
@@ -124,6 +148,12 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
         }
 
         var config = localConfigWork.GetLocalConfig(lang);
+        var steamDataRaw = localConfigWork.GetSteamAnswer(lang);
+        var steamJsonOpt = new JsonSerializerOptions()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+        };
+        var steamData = configManager.ParseSteamApiAnswer(steamDataRaw, steamJsonOpt).Data;
         return StatusCode(StatusCodes.Status200OK, new GameInfo()
         {
             Language = LanguageUtils.LanguageToStringCountryCode((lang == Language.English || localConfigWork.IsAvailable(lang)) ? lang : Language.English) ?? throw new NotImplementedException(),
@@ -143,6 +173,7 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
                 DisplayedWord = x.NeedToBeGuessed ? null : x.Word,
                 Length = x.Word.Length
             }).ToArray(),
+            HintCount = steamData.Genres.Count()
         });
     }
 }
