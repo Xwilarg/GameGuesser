@@ -212,8 +212,12 @@ input[type=text] {
     color: var(--primary-light);
 }
 
+#hints {
+    height: calc(100vh - 170px);
+}
+
 #history {
-    height: calc(100vh - 171px);
+    height: calc(100vh - 170px);
     flex-direction: column;
     align-content: flex-start;
     overflow-y: scroll;
@@ -241,9 +245,12 @@ input[type=text] {
 }
 @media (max-width: 1000px) {
     #history {
-            height: 110px;
+        height: 110px;
         overflow-x: scroll;
         flex-wrap: wrap;
+    }
+    #hints {
+        height: auto;
     }
 }
 

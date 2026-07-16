@@ -381,7 +381,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                     </div>
                 </div>
                 <div className="sub-column">
-                    <div className="container box">
+                    <div className="container box" id="hints">
                         { hintsHtml }
                     </div>
                 </div>
