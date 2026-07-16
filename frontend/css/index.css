@@ -56,8 +56,6 @@ button, .button {
 .container {
     background-color: var(--primary-background);
 
-    display: block;
-    width: 1000px;
     margin: 0 auto;
 
     padding: 5px;
@@ -65,13 +63,26 @@ button, .button {
 
     overflow: hidden;
 }
+.main-column {
+    width: 70vw;
+}
+.sub-column {
+    width: calc(15vw - 15px);
+}
 .box {
     position: relative;
     border: var(--border);
     border-radius: var(--border-radius);
 }
 @media (max-width: 1000px) {
-    .container {
+    .columns {
+        flex-direction: column;
+    }
+
+    .main-column {
+        order: 2;
+    }
+    .main-column, .sub-column {
         width: 98%;
     }
 }
@@ -126,7 +137,7 @@ button, .button {
     align-items: baseline;
 }
 #guess-desc {
-    height: calc(100vh - 510px);
+    height: calc(100vh - 380px);
     overflow-y: scroll;
     scrollbar-color: var(--primary-light) transparent;
     align-items: baseline;
@@ -202,15 +213,18 @@ input[type=text] {
 }
 
 #history {
-    height: 110px;
+    height: calc(100vh - 171px);
     flex-direction: column;
     align-content: flex-start;
-    overflow-x: scroll;
+    overflow-y: scroll;
+
+    flex-wrap: nowrap;
     scrollbar-color: var(--primary-light) transparent;
 }
 #history > div {
     width: 150px;
     gap: 0;
+    margin: 2px 0;
 }
 #history .last-word {
     width: 85px;
@@ -224,6 +238,13 @@ input[type=text] {
     width: 30px;
     padding: 0;
     text-align: center;
+}
+@media (max-width: 1000px) {
+    #history {
+            height: 110px;
+        overflow-x: scroll;
+        flex-wrap: wrap;
+    }
 }
 
 /* Modal */

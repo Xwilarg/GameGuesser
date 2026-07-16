@@ -32,7 +32,7 @@ export default function WinningForm({ state, history, close, endpoint, lang }: W
     }, []);
 
     useEffect(() => {
-        if (!revealData) return;
+        if (!revealData || !revealData.videoLink) return;
 
         const video = videoRef.current;
 
@@ -55,16 +55,16 @@ export default function WinningForm({ state, history, close, endpoint, lang }: W
                         .then(() => window.alert(translate("win.text_copied")))
                         .catch(() => window.prompt(translate("win.copy_share"), shareText));
                     }}>Share</button>
-                    <button onClick={close}>{translate("generic.close")}</button>
                     {
                         revealData
-                            ? <Link to={revealData.steamLink} target="_blank" className="button">Store page</Link>
+                            ? <Link to={revealData.steamLink} target="_blank" className="button">Store</Link>
                             : <></>
                     }
+                    <button onClick={close}>{translate("generic.close")}</button>
                 </div>
                 <div className="is-flex flex-center-hor">
                 {
-                    revealData
+                    revealData && revealData.videoLink
                         ? <video ref={videoRef} controls></video>
                         : <></>
                 }
