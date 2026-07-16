@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, type ReactElement } from "react"
 import GuessAreaForm from "./GuessAreaForm"
 import WinningForm from "./WinningForm"
 import RulesForm from "./RulesForm"
@@ -38,6 +38,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
     let [haveWon, setHaveWon] = useState(false);
     let [lastInput, setLastInput] = useState<LastWordInfo | null>(null);
     let [history, setHistory] = useState<WordHistoryData[]>([]);
+    let [hints, setHints] = useState<string[] | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Modals
@@ -56,6 +57,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
             localStorage.removeItem(`${lang}-shortdesc`)
             localStorage.removeItem(`${lang}-desc`)
             localStorage.removeItem(`${lang}-history`)
+            localStorage.removeItem(`${lang}-hint`)
         }
     }
 
@@ -118,6 +120,10 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                                 shortDescription: JSON.parse(localStorage.getItem(`${x.language}-shortdesc`)!),
                                 description: JSON.parse(localStorage.getItem(`${x.language}-desc`)!)
                             });
+                            const hints = localStorage.getItem(`${x.language}-hint`);
+                            if (hints) setHints(JSON.parse(hints));
+                            else setHints(null);
+
                             if (didWin(name)) {
                                 setHaveWon(true);
                                 setShowVictory(true);
@@ -196,6 +202,25 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
         setShowRules(false);
         setShowVictory(false);
         setShowSettings(false);
+    }
+
+    let hintsHtml: ReactElement;
+    if (history.length < 100) {
+        hintsHtml = <p>{100 - history.length} tries before hints are available...</p>;
+    } else if (hints !== null) {
+        hintsHtml = <p>Game genres<br/>{ hints.join(", ") }</p>
+    } else {
+        hintsHtml = <p><button onClick={() => {
+            fetch(`${getEndpoint()}/api/hint/${lang}`)
+                .then(x => {
+                    if (x.ok) return x.json();
+                    throw new Error();
+                })
+                .then((x: string[]) => {
+                    setHints(x);
+                    localStorage.setItem(`${lang}-hint`, JSON.stringify(x));
+                });
+        }}>Click here to reveal hints</button></p>;
     }
 
     return (
@@ -357,7 +382,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                 </div>
                 <div className="sub-column">
                     <div className="container box">
-                        Coming soon...
+                        { hintsHtml }
                     </div>
                 </div>
             </div>
