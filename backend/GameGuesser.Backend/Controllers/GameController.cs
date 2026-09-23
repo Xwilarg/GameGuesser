@@ -42,9 +42,9 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
         };
     }
 
-    [HttpGet("hint/{language}")]
+    [HttpGet("hint/{language}/{hint}")]
     [ProducesResponseType<IEnumerable<string>>(200)]
-    public async Task<IActionResult> GetHints(string language)
+    public async Task<IActionResult> GetHints(string language, string hint)
     {
         var lang = LanguageUtils.StringCountryCodeToLanguage(language);
         if (lang == null)
@@ -63,7 +63,24 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
         };
         var steamData = configManager.ParseSteamApiAnswer(steamDataRaw, steamJsonOpt).Data;
 
-        return StatusCode(StatusCodes.Status200OK, steamData.Genres.Select(x => x.Description));
+        if (hint == "genre")
+        {
+            return StatusCode(StatusCodes.Status200OK, steamData.Genres.Select(x => x.Description));
+        }
+        if (hint == "developer")
+        {
+            return StatusCode(StatusCodes.Status200OK, steamData.Developers);
+        }
+        if (hint == "publisher")
+        {
+            return StatusCode(StatusCodes.Status200OK, steamData.Publishers);
+        }
+        if (hint == "achievement")
+        {
+            return StatusCode(StatusCodes.Status200OK, steamData.Achievements.Highlighted.Take(5).Select(x => x.Path));
+        }
+
+        return StatusCode(StatusCodes.Status404NotFound);
     }
 
     [HttpGet("reveal/{language}")]

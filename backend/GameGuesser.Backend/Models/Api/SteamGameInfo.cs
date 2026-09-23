@@ -17,6 +17,10 @@ public class SteamGameDataInfo
     public required SteamGameGenreInfo[] Genres { set; get; }
     public SteamGameMovieInfo[]? Movies { set; get; }
     public required SteamGameScreenshotInfo[] Screenshots { set; get; }
+    public required SteamGameAchievementListInfo Achievements { set; get; }
+
+    public required string[] Developers { set; get; }
+    public required string[] Publishers { set; get; }
 }
 
 public class SteamGameGenreInfo
@@ -32,4 +36,14 @@ public class SteamGameMovieInfo
 public class SteamGameScreenshotInfo
 {
     public required string PathFull { set; get; }
+}
+
+public class SteamGameAchievementListInfo
+{
+    public required SteamGameAchievementInfo[] Highlighted { set; get; }
+}
+
+public class SteamGameAchievementInfo
+{
+    public required string Path { set; get; }
 }

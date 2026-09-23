@@ -38,7 +38,10 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
     let [haveWon, setHaveWon] = useState(false);
     let [lastInput, setLastInput] = useState<LastWordInfo | null>(null);
     let [history, setHistory] = useState<WordHistoryData[]>([]);
-    let [hints, setHints] = useState<string[] | null>(null);
+    let [hintGenres, setHintGenres] = useState<string[] | null>(null);
+    let [hintAchievements, setHintAchievements] = useState<string[] | null>(null);
+    let [hintPublishers, setHintPublisher] = useState<string[] | null>(null);
+    let [hintDevelopers, setHintDevelopers] = useState<string[] | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Modals
@@ -120,9 +123,18 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
                                 shortDescription: JSON.parse(localStorage.getItem(`${x.language}-shortdesc`)!),
                                 description: JSON.parse(localStorage.getItem(`${x.language}-desc`)!)
                             });
-                            const hints = localStorage.getItem(`${x.language}-hint`);
-                            if (hints) setHints(JSON.parse(hints));
-                            else setHints(null);
+
+                            const hintGenres = localStorage.getItem(`${x.language}-hint-genre`);
+                            if (hintGenres) setHintGenres(JSON.parse(hintGenres)); else setHintGenres(null);
+
+                            const hintAchievements = localStorage.getItem(`${x.language}-hint-achievement`);
+                            if (hintAchievements) setHintAchievements(JSON.parse(hintAchievements)); else setHintAchievements(null);
+
+                            const hintPublishers = localStorage.getItem(`${x.language}-hint-publisher`);
+                            if (hintPublishers) setHintPublisher(JSON.parse(hintPublishers)); else setHintPublisher(null);
+
+                            const hintDevelopers = localStorage.getItem(`${x.language}-hint-developer`);
+                            if (hintDevelopers) setHintDevelopers(JSON.parse(hintDevelopers)); else setHintDevelopers(null);
 
                             if (didWin(name)) {
                                 setHaveWon(true);
@@ -204,23 +216,53 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
         setShowSettings(false);
     }
 
-    let hintsHtml: ReactElement;
-    if (history.length < 100) {
-        hintsHtml = <p>{100 - history.length} tries before hints are available...</p>;
-    } else if (hints !== null) {
-        hintsHtml = <p>Game genres<br/>{ hints.join(", ") }</p>
-    } else {
-        hintsHtml = <p><button onClick={() => {
-            fetch(`${getEndpoint()}/api/hint/${lang}`)
-                .then(x => {
-                    if (x.ok) return x.json();
-                    throw new Error();
-                })
-                .then((x: string[]) => {
-                    setHints(x);
-                    localStorage.setItem(`${lang}-hint`, JSON.stringify(x));
-                });
-        }}>Click here to reveal hints</button></p>;
+    let hintsHtml: ReactElement[] = [];
+
+    let keys = [{
+        key: "genre",
+        get: hintGenres,
+        set: setHintGenres,
+        display: (x: string[]) => x.join(", ")
+    }, {
+        key: "achievement",
+        get: hintAchievements,
+        set: setHintAchievements,
+        display: (x: string[]) => x.map(x => <img src={x} />)
+    }, {
+        key: "publisher",
+        get: hintPublishers,
+        set: setHintPublisher,
+        display: (x: string[]) => x.join(", ")
+    }, {
+        key: "developer",
+        get: hintDevelopers,
+        set: setHintDevelopers,
+        display: (x: string[]) => x.join(", ")
+    }]
+
+    let count = 100;
+    for (let k of keys)
+    {
+        hintsHtml.push(<h2>{translate(`hint.${k.key}`)}</h2>)
+        if (history.length < count) {
+            hintsHtml.push(<p>{translate("hint.pending", { count: count - history.length })}</p>);
+        } else if (k.get !== null) {
+            hintsHtml.push(<p>{ k.display(k.get) }</p>)
+        } else {
+            hintsHtml.push(<p><button onClick={() => {
+                fetch(`${getEndpoint()}/api/hint/${lang}/${k.key}`)
+                    .then(x => {
+                        if (x.ok) return x.json();
+                        throw new Error();
+                    })
+                    .then((x: string[]) => {
+                        k.set(x);
+                        localStorage.setItem(`${lang}-hint-${k.key}`, JSON.stringify(x));
+                    });
+            }}>{translate("hint.click")}</button></p>);
+        }
+
+        count += 100;
     }
 
     return (
