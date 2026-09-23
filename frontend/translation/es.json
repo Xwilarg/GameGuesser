@@ -14,6 +14,14 @@
     "error": {
         "generic": "Ocurrió un error al inicializar los datos del juego: {{error}}"
     },
+    "hint": {
+        "pending": "{{count}} intentos hasta que la pista este disponible",
+        "click": "Clickea aquí para revelar la pista",
+        "genre": "Géneros de juego",
+        "achievement": "Logros",
+        "publisher": "Editores",
+        "developer": "Desarrolladores"
+    },
     "about": {
         "about": "Acerca de",
         "inspired_by": "Juego inspirado en",
