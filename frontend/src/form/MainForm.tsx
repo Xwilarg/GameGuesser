@@ -240,7 +240,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
         display: (x: string[]) => x.join(", ")
     }]
 
-    let count = 100;
+    let count = 50;
     for (let k of keys)
     {
         hintsHtml.push(<h2>{translate(`hint.${k.key}`)}</h2>)
@@ -262,7 +262,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
             }}>{translate("hint.click")}</button></p>);
         }
 
-        count += 100;
+        count += 50;
     }
 
     return (
