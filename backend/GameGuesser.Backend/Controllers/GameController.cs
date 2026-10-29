@@ -77,7 +77,7 @@ public class GameController(ILogger<GameController> logger, ConfigManager config
         }
         if (hint == "achievement")
         {
-            return StatusCode(StatusCodes.Status200OK, steamData.Achievements.Highlighted.Take(5).Select(x => x.Path));
+            return StatusCode(StatusCodes.Status200OK, steamData.Achievements == null ? [] : steamData.Achievements.Highlighted.Take(5).Select(x => x.Path));
         }
 
         return StatusCode(StatusCodes.Status404NotFound);
