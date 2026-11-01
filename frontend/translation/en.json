@@ -17,6 +17,7 @@
     "hint": {
         "pending": "{{count}} tries before hint is available",
         "click": "Click here to reveal hint",
+        "color": "Show colors",
         "genre": "Game genres",
         "achievement": "Achievements",
         "publisher": "Publishers",

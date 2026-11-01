@@ -114,6 +114,10 @@ button, .button {
     border-top-left-radius: var(--border-radius);
 }
 
+.greyscale {
+    filter: grayscale(1);
+}
+
 .achievement-icon {
     max-width: 75px;
 }

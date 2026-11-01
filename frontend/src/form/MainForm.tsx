@@ -42,7 +42,31 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
     let [hintAchievements, setHintAchievements] = useState<string[] | null>(null);
     let [hintPublishers, setHintPublisher] = useState<string[] | null>(null);
     let [hintDevelopers, setHintDevelopers] = useState<string[] | null>(null);
+    let [hintAchievementColor, setHintAchievementColor] = useState<boolean>(localStorage.getItem(`${lang}-hint-color`) === "1");
     const inputRef = useRef<HTMLInputElement>(null);
+
+    
+    let keys = [{
+        key: "genre",
+        get: hintGenres,
+        set: setHintGenres,
+        display: (x: string[]) => x.join(", ")
+    }, {
+        key: "achievement",
+        get: hintAchievements,
+        set: setHintAchievements,
+        display: (x: string[]) => x.map(x => <img className={`achievement-icon ${hintAchievementColor ? "" : "greyscale"}`} src={x} />)
+    }, {
+        key: "publisher",
+        get: hintPublishers,
+        set: setHintPublisher,
+        display: (x: string[]) => x.join(", ")
+    }, {
+        key: "developer",
+        get: hintDevelopers,
+        set: setHintDevelopers,
+        display: (x: string[]) => x.join(", ")
+    }]
 
     // Modals
     let [showVictory, setShowVictory] = useState(false);
@@ -61,6 +85,11 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
             localStorage.removeItem(`${lang}-desc`)
             localStorage.removeItem(`${lang}-history`)
             localStorage.removeItem(`${lang}-hint`)
+            localStorage.removeItem(`${lang}-hint-color`)
+            for (let k of keys)
+            {
+                localStorage.removeItem(`${lang}-hint-${k.key}`);
+            }
         }
     }
 
@@ -218,27 +247,6 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
 
     let hintsHtml: ReactElement[] = [];
 
-    let keys = [{
-        key: "genre",
-        get: hintGenres,
-        set: setHintGenres,
-        display: (x: string[]) => x.join(", ")
-    }, {
-        key: "achievement",
-        get: hintAchievements,
-        set: setHintAchievements,
-        display: (x: string[]) => x.map(x => <img className="achievement-icon" src={x} />)
-    }, {
-        key: "publisher",
-        get: hintPublishers,
-        set: setHintPublisher,
-        display: (x: string[]) => x.join(", ")
-    }, {
-        key: "developer",
-        get: hintDevelopers,
-        set: setHintDevelopers,
-        display: (x: string[]) => x.join(", ")
-    }]
 
     let count = 50;
     for (let k of keys)
@@ -246,8 +254,16 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
         hintsHtml.push(<h2>{translate(`hint.${k.key}`)}</h2>)
         if (history.length < count) {
             hintsHtml.push(<p>{translate("hint.pending", { count: count - history.length })}</p>);
-        } else if (k.get !== null) {
-            hintsHtml.push(<p>{ k.display(k.get) }</p>)
+        } else if (k.get !== null) {//`${lang}-hint-color`
+            hintsHtml.push(
+            <>
+                {
+                    hintAchievementColor ? <></>
+                    : <button onClick={() => { localStorage.setItem(`${lang}-hint-color`, '1'); setHintAchievementColor(true); }}>{translate("hint.color")}</button>
+                }
+                <p>{ k.display(k.get) }</p>
+            </>
+        )
         } else {
             hintsHtml.push(<p><button onClick={() => {
                 fetch(`${getEndpoint()}/api/hint/${lang}/${k.key}`)
