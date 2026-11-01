@@ -114,6 +114,10 @@ button, .button {
     border-top-left-radius: var(--border-radius);
 }
 
+.achievement-icon {
+    max-width: 75px;
+}
+
 .hidden-word {
     background-color: black;
     height: 30px;

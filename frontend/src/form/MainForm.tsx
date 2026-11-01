@@ -227,7 +227,7 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
         key: "achievement",
         get: hintAchievements,
         set: setHintAchievements,
-        display: (x: string[]) => x.map(x => <img src={x} />)
+        display: (x: string[]) => x.map(x => <img className="achievement-icon" src={x} />)
     }, {
         key: "publisher",
         get: hintPublishers,
