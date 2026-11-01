@@ -285,7 +285,9 @@ export default function MainForm({ lang, setLang }: MainFormProps) {
         <>
             { showAbout ? <AboutForm close={() => { setShowAbout(false); }} /> : <></> }
             { showRules ? <RulesForm close={() => { setShowRules(false); localStorage.setItem("rules", "1"); }} /> : <></> }
-            { showVictory ? <WinningForm close={() => { setShowVictory(false) }} state={data!} history={history} endpoint={getEndpoint()} lang={lang} /> : <></> }
+            { showVictory ? <WinningForm close={() => { setShowVictory(false) }} state={data!} history={history} endpoint={getEndpoint()} lang={lang} hints={
+                keys.filter(x => x.get !== null).length + (hintAchievementColor ? 1 : 0)
+            } /> : <></> }
             { showSettings ? <SettingsForm close={() => { setShowSettings(false) }} language={lang} setLanguage={(newLang: string) => {
                 localStorage.setItem("lang", newLang); // Store user prefered language
                 setLang(newLang);

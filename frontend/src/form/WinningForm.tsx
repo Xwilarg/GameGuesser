@@ -13,10 +13,12 @@ interface WinningFormProps {
     close: () => void
 
     endpoint: string
-    lang: string
+    lang: string,
+
+    hints: number
 }
 
-export default function WinningForm({ state, history, close, endpoint, lang }: WinningFormProps) {
+export default function WinningForm({ state, history, close, endpoint, lang, hints }: WinningFormProps) {
     if (!state) {
         return <></>
     }
@@ -50,7 +52,7 @@ export default function WinningForm({ state, history, close, endpoint, lang }: W
                 <h1>{translate("win.title", { gamename: getGameName(), number: state.iteration })}</h1>
                 <div className="is-flex flex-center-hor ">
                     <button onClick={() => {
-                        let shareText = `${getGameName()} #${state.iteration}\n${translate("win.completion_count", { tries: history.length })}\n\n${window.location}`;
+                        let shareText = `${getGameName()} #${state.iteration}\n${translate("win.completion_count", { tries: history.length })}\n${translate("win.hints_used", { hints: hints })}\n\n${window.location}`;
                         navigator.clipboard.writeText(shareText)
                         .then(() => window.alert(translate("win.text_copied")))
                         .catch(() => window.prompt(translate("win.copy_share"), shareText));
